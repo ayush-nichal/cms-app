@@ -39,6 +39,13 @@ class PlatformController {
       res.status(204).send();
     } catch (error) { next(error); }
   }
+
+  async getSchedules(req, res, next) {
+    try {
+      const schedules = await platformService.getSchedules(req.params.id);
+      res.status(200).json(schedules);
+    } catch (error) { next(error); }
+  }
 }
 
 module.exports = new PlatformController();

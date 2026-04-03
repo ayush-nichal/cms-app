@@ -199,6 +199,8 @@ class ScheduleNotifier extends StateNotifier<ScheduleState> {
       status: newStatus, 
       createdById: oldSchedule.createdById,
       creatorName: oldSchedule.creatorName,
+      channelName: oldSchedule.channelName,
+      channelHandle: oldSchedule.channelHandle,
       statusUpdatedByName: 'Updating...',
       statusUpdatedAt: DateTime.now(),
       createdAt: oldSchedule.createdAt,

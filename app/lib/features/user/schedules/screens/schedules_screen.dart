@@ -83,7 +83,7 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: ChoiceChip(
-                    label: Text(assignment.channelName),
+                    label: Text('${assignment.channelName} (${assignment.platformName})'),
                     selected: isSelected,
                     onSelected: (selected) {
                       if (selected) notifier.selectChannel(assignment.channelId);

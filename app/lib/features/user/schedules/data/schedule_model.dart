@@ -9,6 +9,8 @@ class Schedule {
   final String status;
   final String createdById;
   final String? creatorName;
+  final String? channelName;
+  final String? channelHandle;
   final String? statusUpdatedByName;
   final DateTime? statusUpdatedAt;
   final DateTime createdAt;
@@ -24,6 +26,8 @@ class Schedule {
     required this.status,
     required this.createdById,
     this.creatorName,
+    this.channelName,
+    this.channelHandle,
     this.statusUpdatedByName,
     this.statusUpdatedAt,
     required this.createdAt,
@@ -41,6 +45,8 @@ class Schedule {
       status: json['status'] as String,
       createdById: json['created_by'] as String,
       creatorName: json['creator']?['email'] as String?,
+      channelName: json['channel']?['name'] as String?,
+      channelHandle: json['channel']?['handle'] as String?,
       statusUpdatedByName: json['statusUpdatedBy']?['email'] as String?,
       statusUpdatedAt: json['status_updated_at'] != null ? DateTime.parse(json['status_updated_at'] as String).toLocal() : null,
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),

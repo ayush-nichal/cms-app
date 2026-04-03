@@ -21,4 +21,6 @@ router.get('/:id/channels', asyncHandler(async (req, res, next) => {
   } catch (error) { next(error); }
 }));
 
+router.get('/:id/schedules', asyncHandler(platformController.getSchedules));
+
 module.exports = router;

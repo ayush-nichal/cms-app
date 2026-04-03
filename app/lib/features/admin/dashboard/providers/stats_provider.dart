@@ -1,6 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/network/dio_client.dart';
+import '../../../user/schedules/data/schedule_model.dart';
 import '../data/stats_model.dart';
 import '../data/stats_repository.dart';
+
+final platformSchedulesProvider = FutureProvider.family<List<Schedule>, String>((ref, platformId) async {
+  final dio = ref.watch(dioClientProvider);
+  final response = await dio.get('/platforms/$platformId/schedules');
+  return (response.data as List).map((json) => Schedule.fromJson(json)).toList();
+});
 
 class StatsState {
   final OverviewStats? overview;

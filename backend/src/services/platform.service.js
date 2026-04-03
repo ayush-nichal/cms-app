@@ -59,6 +59,24 @@ class PlatformService {
 
     return prisma.platform.delete({ where: { id } });
   }
+  async getSchedules(id) {
+    const platform = await prisma.platform.findUnique({ where: { id } });
+    if (!platform) throw { statusCode: 404, message: 'Platform not found' };
+
+    return prisma.schedule.findMany({
+      where: { channel: { platform_id: id } },
+      orderBy: { scheduled_at: 'desc' },
+      include: {
+        channel: true,
+        creator: {
+          select: { email: true }
+        },
+        statusUpdatedBy: {
+          select: { email: true }
+        }
+      }
+    });
+  }
 }
 
 module.exports = new PlatformService();
