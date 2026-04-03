@@ -1,0 +1,107 @@
+class Schedule {
+  final String id;
+  final String channelId;
+  final String title;
+  final String contentType; 
+  final String? description;
+  final String? mediaUrl;
+  final DateTime scheduledAt;
+  final String status;
+  final String createdById;
+  final String? creatorName;
+  final String? statusUpdatedByName;
+  final DateTime? statusUpdatedAt;
+  final DateTime createdAt;
+
+  Schedule({
+    required this.id,
+    required this.channelId,
+    required this.title,
+    required this.contentType,
+    this.description,
+    this.mediaUrl,
+    required this.scheduledAt,
+    required this.status,
+    required this.createdById,
+    this.creatorName,
+    this.statusUpdatedByName,
+    this.statusUpdatedAt,
+    required this.createdAt,
+  });
+
+  factory Schedule.fromJson(Map<String, dynamic> json) {
+    return Schedule(
+      id: json['id'] as String,
+      channelId: json['channel_id'] as String,
+      title: json['title'] as String,
+      contentType: json['content_type'] as String,
+      description: json['description'] as String?,
+      mediaUrl: json['media_url'] as String?,
+      scheduledAt: DateTime.parse(json['scheduled_at'] as String).toLocal(),
+      status: json['status'] as String,
+      createdById: json['created_by'] as String,
+      creatorName: json['creator']?['email'] as String?,
+      statusUpdatedByName: json['statusUpdatedBy']?['email'] as String?,
+      statusUpdatedAt: json['status_updated_at'] != null ? DateTime.parse(json['status_updated_at'] as String).toLocal() : null,
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+    );
+  }
+}
+
+class CreateScheduleRequest {
+  final String channelId;
+  final String title;
+  final String contentType;
+  final String? description;
+  final String? mediaUrl;
+  final DateTime scheduledAt;
+
+  CreateScheduleRequest({
+    required this.channelId,
+    required this.title,
+    required this.contentType,
+    this.description,
+    this.mediaUrl,
+    required this.scheduledAt,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'channelId': channelId,
+      'title': title,
+      'contentType': contentType,
+      if (description != null && description!.isNotEmpty) 'description': description,
+      if (mediaUrl != null && mediaUrl!.isNotEmpty) 'mediaUrl': mediaUrl,
+      'scheduledAt': scheduledAt.toUtc().toIso8601String(),
+    };
+  }
+}
+
+class SchedulePage {
+  final List<Schedule> items;
+  final int total;
+  final int page;
+  final bool hasMore;
+
+  SchedulePage({
+    required this.items,
+    required this.total,
+    required this.page,
+    required this.hasMore,
+  });
+
+  factory SchedulePage.fromJson(Map<String, dynamic> json) {
+    final list = json['items'] as List;
+    final parsedItems = list.map((e) => Schedule.fromJson(e as Map<String, dynamic>)).toList();
+    final limit = 20; 
+    final fetchedTotal = json['total'] as int;
+    final pageNum = json['page'] as int;
+
+    return SchedulePage(
+      items: parsedItems,
+      total: fetchedTotal,
+      page: pageNum,
+      hasMore: (pageNum * limit) < fetchedTotal,
+    );
+  }
+}

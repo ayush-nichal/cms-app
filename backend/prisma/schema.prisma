@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  creator
+  editor
+}
+
+enum ContentType {
+  post
+  video
+}
+
+enum ScheduleStatus {
+  scheduled
+  posted
+  not_posted
+}
+
+enum NotificationStatus {
+  sent
+  failed
+  retrying
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  password_hash     String
+  role              Role
+  whatsapp_number   String?
+  callmebot_api_key String?
+  is_active         Boolean  @default(true)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  assignments       UserChannelAssignment[]
+  notification_logs NotificationLog[]
+  schedulesCreated  Schedule[] @relation("ScheduleCreator")
+  schedulesUpdated  Schedule[] @relation("ScheduleStatusUpdater")
+}
+
+model Platform {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  created_at DateTime @default(now())
+
+  channels   Channel[]
+}
+
+model Channel {
+  id          String   @id @default(uuid())
+  platform_id String
+  name        String
+  handle      String
+  created_at  DateTime @default(now())
+
+  platform    Platform @relation(fields: [platform_id], references: [id])
+  assignments       UserChannelAssignment[]
+  schedules         Schedule[]
+  notification_logs NotificationLog[]
+}
+
+model UserChannelAssignment {
+  id         String   @id @default(uuid())
+  user_id    String
+  channel_id String
+  role       Role
+  created_at DateTime @default(now())
+
+  user       User     @relation(fields: [user_id], references: [id])
+  channel    Channel  @relation(fields: [channel_id], references: [id])
+}
+
+model Schedule {
+  id                String         @id @default(uuid())
+  channel_id        String
+  created_by        String
+  title             String
+  content_type      ContentType
+  description       String?
+  media_url         String?
+  scheduled_at      DateTime
+  status            ScheduleStatus @default(scheduled)
+  status_updated_by String?
+  status_updated_at DateTime?
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @updatedAt
+
+  channel           Channel        @relation(fields: [channel_id], references: [id])
+  creator           User           @relation("ScheduleCreator", fields: [created_by], references: [id])
+  statusUpdatedBy   User?          @relation("ScheduleStatusUpdater", fields: [status_updated_by], references: [id])
+  notification_logs NotificationLog[]
+}
+
+model NotificationLog {
+  id          String             @id @default(uuid())
+  user_id     String
+  channel_id  String
+  schedule_id String
+  channel     String
+  sent_at     DateTime
+  status      NotificationStatus
+
+  user          User     @relation(fields: [user_id], references: [id])
+  targetChannel Channel  @relation(fields: [channel_id], references: [id])
+  schedule      Schedule @relation(fields: [schedule_id], references: [id])
+}
+// Migration: npx prisma migrate dev --name add_notification_channel
