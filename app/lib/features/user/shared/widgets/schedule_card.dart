@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../schedules/data/schedule_model.dart';
 import 'package:intl/intl.dart';
-import 'status_chip.dart';
+import '../../../../core/utils/content_type_translator.dart';
 
 class ScheduleCard extends StatelessWidget {
   final Schedule schedule;
@@ -11,11 +11,19 @@ class ScheduleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isPast = schedule.scheduledAt.isBefore(DateTime.now());
+    final isPast = schedule.isPastDue;
     final Color textColor = isPast ? Colors.grey : Colors.black87;
     final bool isVideo = schedule.mediaUrl != null && (schedule.mediaUrl!.toLowerCase().endsWith('.mp4') || schedule.mediaUrl!.toLowerCase().endsWith('.mov'));
+    
+    final platformName = schedule.channelName != null && schedule.channelName!.contains('(') 
+        ? schedule.channelName!.substring(schedule.channelName!.indexOf('(') + 1, schedule.channelName!.indexOf(')'))
+        : 'default';
+        
+    final typeLabel = ContentTypeTranslator.translate(schedule.contentType, platformName);
+    final badgeColor = ContentTypeTranslator.getColor(schedule.contentType);
+    final badgeIcon = ContentTypeTranslator.getIcon(schedule.contentType);
 
-    return Card(
+    final card = Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       color: isPast ? Colors.grey.shade100 : Colors.white,
       child: InkWell(
@@ -41,20 +49,22 @@ class ScheduleCard extends StatelessWidget {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            Icon(
-                              schedule.contentType == 'video' ? Icons.videocam : Icons.image,
-                              size: 16,
-                              color: textColor,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              schedule.contentType.toUpperCase(),
-                              style: TextStyle(fontSize: 12, color: textColor),
-                            ),
-                            const Spacer(),
-                            Text(
-                              DateFormat('MMM d · hh:mm a').format(schedule.scheduledAt),
-                              style: TextStyle(fontSize: 12, color: isPast ? Colors.red.shade300 : Colors.blue.shade700, fontWeight: FontWeight.w600),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: badgeColor,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(badgeIcon, size: 12, color: Colors.white),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    typeLabel.toUpperCase(),
+                                    style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -84,14 +94,38 @@ class ScheduleCard extends StatelessWidget {
                 ],
               ),
               const Divider(height: 16),
-              Align(
-                alignment: Alignment.centerRight,
-                child: StatusChip(status: schedule.status),
+              Row(
+                children: [
+                  if (schedule.channelHandle != null)
+                    Expanded(
+                      child: Text(
+                        schedule.channelHandle!,
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        DateFormat('MMM d · hh:mm a').format(schedule.scheduledAt),
+                        style: TextStyle(fontSize: 12, color: isPast ? Colors.red.shade300 : Colors.blue.shade700, fontWeight: FontWeight.w600),
+                      ),
+                      if (isPast)
+                        Text('Past due', style: TextStyle(fontSize: 10, color: Colors.red.shade300, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
     );
+
+    if (isPast) {
+      return Opacity(opacity: 0.55, child: card);
+    }
+    return card;
   }
 }

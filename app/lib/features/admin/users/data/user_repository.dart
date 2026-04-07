@@ -70,11 +70,10 @@ class UserRepository {
     }
   }
 
-  Future<UserAssignment> addAssignment(String userId, String channelId, String role) async {
+  Future<UserAssignment> addAssignment(String userId, String channelId) async {
     try {
       final response = await dio.post('/users/$userId/assignments', data: {
         'channelId': channelId,
-        'role': role,
       });
       return UserAssignment.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {

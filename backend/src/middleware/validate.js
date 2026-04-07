@@ -22,26 +22,20 @@ const loginSchema = z.object({
 const createUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.enum(['admin', 'user']),
   whatsapp_number: z.string().optional().nullable()
 });
 
 const createScheduleSchema = z.object({
   channelId: z.string().min(1),
   title: z.string().min(1).max(100),
-  contentType: z.enum(['post', 'video']),
+  contentType: z.enum(['text_post', 'image_post', 'short_form_video', 'long_form_video', 'carousel_post']),
   description: z.string().max(500).optional().nullable(),
   scheduledAt: z.string().datetime()
-});
-
-const updateStatusSchema = z.object({
-  status: z.enum(['scheduled', 'posted', 'not_posted'])
 });
 
 module.exports = {
   validateBody,
   loginSchema,
   createUserSchema,
-  createScheduleSchema,
-  updateStatusSchema
+  createScheduleSchema
 };

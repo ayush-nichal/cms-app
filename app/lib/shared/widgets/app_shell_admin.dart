@@ -34,17 +34,6 @@ class AppShellAdmin extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              ref.read(authProvider.notifier).logout();
-            },
-          ),
-        ],
-      ),
       body: ErrorBannerOverlay(child: child),
       bottomNavigationBar: NavigationBar(
         selectedIndex: calculateSelectedIndex(context),

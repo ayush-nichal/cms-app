@@ -112,10 +112,10 @@ class UserNotifier extends StateNotifier<UserState> {
     }
   }
 
-  Future<void> addAssignment(String userId, String channelId, String role) async {
+  Future<void> addAssignment(String userId, String channelId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final assignment = await _repository.addAssignment(userId, channelId, role);
+      final assignment = await _repository.addAssignment(userId, channelId);
       final users = state.users.map((u) {
         if (u.id == userId) {
           return u.copyWith(assignments: [...u.assignments, assignment]);

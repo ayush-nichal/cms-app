@@ -6,13 +6,10 @@ class Schedule {
   final String? description;
   final String? mediaUrl;
   final DateTime scheduledAt;
-  final String status;
   final String createdById;
   final String? creatorName;
   final String? channelName;
   final String? channelHandle;
-  final String? statusUpdatedByName;
-  final DateTime? statusUpdatedAt;
   final DateTime createdAt;
 
   Schedule({
@@ -23,15 +20,14 @@ class Schedule {
     this.description,
     this.mediaUrl,
     required this.scheduledAt,
-    required this.status,
     required this.createdById,
     this.creatorName,
     this.channelName,
     this.channelHandle,
-    this.statusUpdatedByName,
-    this.statusUpdatedAt,
     required this.createdAt,
   });
+
+  bool get isPastDue => scheduledAt.isBefore(DateTime.now());
 
   factory Schedule.fromJson(Map<String, dynamic> json) {
     return Schedule(
@@ -42,13 +38,10 @@ class Schedule {
       description: json['description'] as String?,
       mediaUrl: json['media_url'] as String?,
       scheduledAt: DateTime.parse(json['scheduled_at'] as String).toLocal(),
-      status: json['status'] as String,
       createdById: json['created_by'] as String,
       creatorName: json['creator']?['email'] as String?,
       channelName: json['channel']?['name'] as String?,
       channelHandle: json['channel']?['handle'] as String?,
-      statusUpdatedByName: json['statusUpdatedBy']?['email'] as String?,
-      statusUpdatedAt: json['status_updated_at'] != null ? DateTime.parse(json['status_updated_at'] as String).toLocal() : null,
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
     );
   }

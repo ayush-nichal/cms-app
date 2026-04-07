@@ -23,9 +23,6 @@ async function runNotificationJob() {
 
     // 1. Fetch ALL schedules that are technically pending
     const upcomingSchedules = await prisma.schedule.findMany({
-      where: {
-        status: 'scheduled'
-      },
       include: {
         channel: {
           include: {

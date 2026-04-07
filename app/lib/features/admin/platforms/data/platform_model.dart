@@ -42,20 +42,28 @@ class Channel {
   final String platformId;
   final String name;
   final String handle;
+  final DateTime? lastPostAt;
 
   Channel({
     required this.id,
     required this.platformId,
     required this.name,
     required this.handle,
+    this.lastPostAt,
   });
 
   factory Channel.fromJson(Map<String, dynamic> json) {
+    DateTime? lastPost;
+    if (json['schedules'] != null && (json['schedules'] as List).isNotEmpty) {
+      lastPost = DateTime.parse(json['schedules'][0]['scheduled_at'] as String).toLocal();
+    }
+    
     return Channel(
       id: json['id'] as String,
       platformId: json['platform_id'] as String,
       name: json['name'] as String,
       handle: json['handle'] as String,
+      lastPostAt: lastPost,
     );
   }
 
@@ -73,12 +81,14 @@ class Channel {
     String? platformId,
     String? name,
     String? handle,
+    DateTime? lastPostAt,
   }) {
     return Channel(
       id: id ?? this.id,
       platformId: platformId ?? this.platformId,
       name: name ?? this.name,
       handle: handle ?? this.handle,
+      lastPostAt: lastPostAt ?? this.lastPostAt,
     );
   }
 }

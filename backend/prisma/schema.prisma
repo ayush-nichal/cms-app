@@ -1,3 +1,7 @@
+// Migration Steps:
+// 1. Run data_migration.sql manually in Supabase SQL editor to translate existing enums to the new primitives.
+// 2. Run `npx prisma migrate dev --name v2_schema_overhaul` to drop the old columns and apply the new constraints.
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,18 +14,14 @@ datasource db {
 enum Role {
   admin
   creator
-  editor
 }
 
 enum ContentType {
-  post
-  video
-}
-
-enum ScheduleStatus {
-  scheduled
-  posted
-  not_posted
+  text_post
+  image_post
+  short_form_video
+  long_form_video
+  carousel_post
 }
 
 enum NotificationStatus {
@@ -44,7 +44,6 @@ model User {
   assignments       UserChannelAssignment[]
   notification_logs NotificationLog[]
   schedulesCreated  Schedule[] @relation("ScheduleCreator")
-  schedulesUpdated  Schedule[] @relation("ScheduleStatusUpdater")
 }
 
 model Platform {
@@ -72,7 +71,6 @@ model UserChannelAssignment {
   id         String   @id @default(uuid())
   user_id    String
   channel_id String
-  role       Role
   created_at DateTime @default(now())
 
   user       User     @relation(fields: [user_id], references: [id])
@@ -88,15 +86,11 @@ model Schedule {
   description       String?
   media_url         String?
   scheduled_at      DateTime
-  status            ScheduleStatus @default(scheduled)
-  status_updated_by String?
-  status_updated_at DateTime?
   created_at        DateTime       @default(now())
   updated_at        DateTime       @updatedAt
 
   channel           Channel        @relation(fields: [channel_id], references: [id])
   creator           User           @relation("ScheduleCreator", fields: [created_by], references: [id])
-  statusUpdatedBy   User?          @relation("ScheduleStatusUpdater", fields: [status_updated_by], references: [id])
   notification_logs NotificationLog[]
 }
 
@@ -113,4 +107,3 @@ model NotificationLog {
   targetChannel Channel  @relation(fields: [channel_id], references: [id])
   schedule      Schedule @relation(fields: [schedule_id], references: [id])
 }
-// Migration: npx prisma migrate dev --name add_notification_channel

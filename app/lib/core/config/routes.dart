@@ -89,7 +89,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/admin/platforms/:id/stats',
             builder: (context, state) => PlatformStatsScreen(
               platformId: state.pathParameters['id']!,
-              platformName: state.extra as String,
             ),
           ),
           GoRoute(
@@ -151,7 +150,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/user/schedules/new',
-            builder: (context, state) => ScheduleFormScreen(channelId: state.extra as String),
+            builder: (context, state) => ScheduleFormScreen(channelId: state.extra as String, platformName: 'default'),
           ),
           GoRoute(
             path: '/user/schedules/edit',
@@ -160,6 +159,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               return ScheduleFormScreen(
                 channelId: extra['channelId'] as String,
                 schedule: extra['schedule'] as Schedule,
+                platformName: 'default',
               );
             },
           ),

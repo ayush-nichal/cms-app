@@ -9,6 +9,7 @@ const channelRoutes = require('./routes/channel.routes');
 const userRoutes = require('./routes/user.routes');
 const scheduleRoutes = require('./routes/schedule.routes');
 const statsRoutes = require('./routes/stats.routes');
+const analyticsRoutes = require('./routes/analytics.routes');
 const mediaRoutes = require('./routes/media.routes');
 const rateLimit = require('express-rate-limit');
 
@@ -38,6 +39,7 @@ app.use('/channels', channelRoutes);
 app.use('/users', userRoutes);
 app.use('/schedules', scheduleRoutes);
 app.use('/stats', statsRoutes);
+app.use('/analytics', analyticsRoutes);
 app.use('/media', mediaRoutes);
 
 app.use(errorHandler);

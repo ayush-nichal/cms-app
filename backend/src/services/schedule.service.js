@@ -25,8 +25,7 @@ class ScheduleService {
         take: parseInt(limit, 10),
         orderBy: { scheduled_at: 'desc' },
         include: {
-          creator: { select: { email: true } },
-          statusUpdatedBy: { select: { email: true } }
+          creator: { select: { email: true } }
         }
       })
     ]);
@@ -38,8 +37,7 @@ class ScheduleService {
     const schedule = await prisma.schedule.findUnique({
       where: { id },
       include: {
-        creator: { select: { email: true } },
-        statusUpdatedBy: { select: { email: true } }
+        creator: { select: { email: true } }
       }
     });
     if (!schedule) throw { statusCode: 404, message: 'Schedule not found' };
@@ -49,9 +47,6 @@ class ScheduleService {
 
   async create(data, userId) {
     const assignment = await this._checkAssignment(userId, data.channelId);
-    if (assignment.role !== 'creator') {
-      throw { statusCode: 403, message: 'Forbidden: Only creators can create schedules' };
-    }
 
     return prisma.schedule.create({
       data: {
@@ -64,8 +59,7 @@ class ScheduleService {
         scheduled_at: new Date(data.scheduledAt),
       },
       include: {
-        creator: { select: { email: true } },
-        statusUpdatedBy: { select: { email: true } }
+        creator: { select: { email: true } }
       }
     });
   }
@@ -74,10 +68,7 @@ class ScheduleService {
     const schedule = await prisma.schedule.findUnique({ where: { id } });
     if (!schedule) throw { statusCode: 404, message: 'Schedule not found' };
     
-    const assignment = await this._checkAssignment(userId, schedule.channel_id);
-    if (assignment.role !== 'creator') {
-      throw { statusCode: 403, message: 'Forbidden: Only creators can edit schedules' };
-    }
+    await this._checkAssignment(userId, schedule.channel_id);
 
     return prisma.schedule.update({
       where: { id },
@@ -89,8 +80,7 @@ class ScheduleService {
         scheduled_at: data.scheduledAt ? new Date(data.scheduledAt) : undefined,
       },
       include: {
-        creator: { select: { email: true } },
-        statusUpdatedBy: { select: { email: true } }
+        creator: { select: { email: true } }
       }
     });
   }
@@ -99,10 +89,7 @@ class ScheduleService {
     const schedule = await prisma.schedule.findUnique({ where: { id } });
     if (!schedule) throw { statusCode: 404, message: 'Schedule not found' };
 
-    const assignment = await this._checkAssignment(userId, schedule.channel_id);
-    if (assignment.role !== 'creator') {
-      throw { statusCode: 403, message: 'Forbidden: Only creators can delete schedules' };
-    }
+    await this._checkAssignment(userId, schedule.channel_id);
 
     if (schedule.media_url) {
       const mediaService = require('./media.service');
@@ -112,31 +99,6 @@ class ScheduleService {
     }
 
     await prisma.schedule.delete({ where: { id } });
-  }
-
-  async updateStatus(id, newStatus, userId) {
-    const validStatuses = ['scheduled', 'posted', 'not_posted'];
-    if (!validStatuses.includes(newStatus)) {
-      throw { statusCode: 400, message: 'Invalid status value' };
-    }
-
-    const schedule = await prisma.schedule.findUnique({ where: { id } });
-    if (!schedule) throw { statusCode: 404, message: 'Schedule not found' };
-
-    await this._checkAssignment(userId, schedule.channel_id);
-
-    return prisma.schedule.update({
-      where: { id },
-      data: {
-        status: newStatus,
-        status_updated_by: userId,
-        status_updated_at: new Date(),
-      },
-      include: {
-        creator: { select: { email: true } },
-        statusUpdatedBy: { select: { email: true } }
-      }
-    });
   }
 }
 

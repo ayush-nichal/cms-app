@@ -156,10 +156,6 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
                       child: ListTile(
                         title: Text(assign.channelName),
                         subtitle: Text(assign.platformName),
-                        trailing: Chip(
-                          label: Text(assign.role.toUpperCase(), style: TextStyle(color: assign.role == 'creator' ? Colors.blue.shade900 : Colors.amber.shade900, fontSize: 10)),
-                          backgroundColor: assign.role == 'creator' ? Colors.blue.shade100 : Colors.amber.shade100,
-                        ),
                       ),
                     ),
                   );

@@ -3,9 +3,8 @@ class AuthUserAssignment {
   final String channelId;
   final String channelName;
   final String platformName;
-  final String role;
 
-  AuthUserAssignment({required this.id, required this.channelId, required this.channelName, required this.platformName, required this.role});
+  AuthUserAssignment({required this.id, required this.channelId, required this.channelName, required this.platformName});
 
   factory AuthUserAssignment.fromJson(Map<String, dynamic> json) {
     return AuthUserAssignment(
@@ -13,7 +12,6 @@ class AuthUserAssignment {
       channelId: json['channel_id'] as String,
       channelName: json['channel']['name'] as String,
       platformName: json['channel']['platform']['name'] as String,
-      role: json['role'] as String,
     );
   }
 }

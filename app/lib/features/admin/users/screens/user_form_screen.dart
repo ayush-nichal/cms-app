@@ -18,7 +18,6 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
   late final TextEditingController _whatsappController;
-  String _selectedRole = 'creator';
   bool _isLoading = false;
 
   @override
@@ -27,9 +26,6 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
     _emailController = TextEditingController(text: widget.user?.email ?? '');
     _passwordController = TextEditingController();
     _whatsappController = TextEditingController(text: widget.user?.whatsappNumber ?? '');
-    if (widget.user != null && ['creator', 'editor'].contains(widget.user!.role)) {
-      _selectedRole = widget.user!.role;
-    }
   }
 
   @override
@@ -54,14 +50,12 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
         await provider.createUser(CreateUserRequest(
           email: email,
           password: password,
-          role: _selectedRole,
           whatsappNumber: whatsapp,
         ));
       } else {
         await provider.updateUser(widget.user!.id, UpdateUserRequest(
           email: email,
           password: password,
-          role: _selectedRole,
           whatsappNumber: whatsapp,
         ));
       }
@@ -105,18 +99,6 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
                   if (!emailRegex.hasMatch(val)) return 'Enter a valid email address';
                   return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedRole,
-                decoration: const InputDecoration(labelText: 'Role', border: OutlineInputBorder()),
-                items: const [
-                  DropdownMenuItem(value: 'creator', child: Text('Creator')),
-                  DropdownMenuItem(value: 'editor', child: Text('Editor')),
-                ],
-                onChanged: (val) {
-                  if (val != null) setState(() => _selectedRole = val);
                 },
               ),
               const SizedBox(height: 16),

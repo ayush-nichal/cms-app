@@ -64,7 +64,7 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
       (a) => a.channelId == selectedChannelId, 
       orElse: () => user.assignments.first
     );
-    final isCreator = selectedAssignment.role == 'creator';
+    final isCreator = user.role == 'creator';
     
     final schedules = scheduleState.schedulesByChannel[selectedChannelId] ?? [];
     final isLoading = scheduleState.isLoading;

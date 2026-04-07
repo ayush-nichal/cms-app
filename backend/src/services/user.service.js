@@ -36,7 +36,7 @@ class UserService {
     return user;
   }
 
-  async create(email, password, role, whatsapp_number) {
+  async create(email, password, whatsapp_number) {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) throw { statusCode: 400, message: 'Email already exists' };
 
@@ -46,7 +46,7 @@ class UserService {
       data: {
         email,
         password_hash,
-        role,
+        role: 'creator',
         whatsapp_number: whatsapp_number || null,
         is_active: true
       }
@@ -66,7 +66,6 @@ class UserService {
     if (data.password) {
       updateData.password_hash = await bcrypt.hash(data.password, 12);
     }
-    if (data.role) updateData.role = data.role;
     if (data.whatsapp_number !== undefined) updateData.whatsapp_number = data.whatsapp_number || null;
     if (data.callmebot_api_key !== undefined) updateData.callmebot_api_key = data.callmebot_api_key || null;
 
@@ -86,7 +85,7 @@ class UserService {
     });
   }
 
-  async addAssignment(userId, channelId, role) {
+  async addAssignment(userId, channelId) {
     const existing = await prisma.userChannelAssignment.findFirst({
       where: { user_id: userId, channel_id: channelId }
     });
@@ -95,8 +94,7 @@ class UserService {
     return prisma.userChannelAssignment.create({
       data: {
         user_id: userId,
-        channel_id: channelId,
-        role
+        channel_id: channelId
       },
       include: {
         channel: {

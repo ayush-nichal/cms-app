@@ -5,6 +5,14 @@ class ChannelService {
   async getByPlatform(platform_id) {
     return prisma.channel.findMany({
       where: { platform_id },
+      include: {
+        schedules: {
+          where: { scheduled_at: { lte: new Date() } },
+          orderBy: { scheduled_at: 'desc' },
+          take: 1,
+          select: { scheduled_at: true }
+        }
+      },
       orderBy: { created_at: 'desc' }
     });
   }

@@ -6,7 +6,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import '../providers/schedule_provider.dart';
 import '../data/schedule_model.dart';
-import '../../shared/widgets/status_chip.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 
 class ScheduleDetailScreen extends ConsumerStatefulWidget {
@@ -143,33 +142,6 @@ class _ScheduleDetailScreenState extends ConsumerState<ScheduleDetailScreen> {
               ],
             ),
             const SizedBox(height: 24),
-            Row(
-              children: [
-                const Text('Status: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                StatusChip(
-                  status: widget.schedule.status,
-                  scheduleId: widget.schedule.id,
-                  isInteractive: true,
-                  onStatusChanged: (newStatus) async {
-                    try {
-                      await ref.read(scheduleProvider.notifier).updateStatus(widget.schedule.id, widget.schedule.channelId, newStatus);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Status updated')));
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
-                      }
-                    }
-                  },
-                ),
-              ],
-            ),
-            if (widget.schedule.statusUpdatedByName != null && widget.schedule.statusUpdatedAt != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text('Last updated by ${widget.schedule.statusUpdatedByName} at ${DateFormat('MMM d, hh:mm a').format(widget.schedule.statusUpdatedAt!)}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-              ),
             const Divider(height: 32),
             if (widget.schedule.description != null && widget.schedule.description!.isNotEmpty) ...[
               const Text('Description', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),

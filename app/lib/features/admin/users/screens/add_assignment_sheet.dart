@@ -14,13 +14,12 @@ class AddAssignmentSheet extends ConsumerStatefulWidget {
 }
 
 class _AddAssignmentSheetState extends ConsumerState<AddAssignmentSheet> {
-  String _selectedRole = 'creator';
   bool _isSubmitting = false;
 
   void _assignChannel(String channelId) async {
     setState(() => _isSubmitting = true);
     try {
-      await ref.read(userProvider.notifier).addAssignment(widget.user.id, channelId, _selectedRole);
+      await ref.read(userProvider.notifier).addAssignment(widget.user.id, channelId);
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Assignment added')));
@@ -44,19 +43,6 @@ class _AddAssignmentSheetState extends ConsumerState<AddAssignmentSheet> {
       child: Column(
         children: [
           Text('Select Channel to Assign', style: Theme.of(context).textTheme.titleLarge),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'creator', label: Text('Creator')),
-                ButtonSegment(value: 'editor', label: Text('Editor')),
-              ],
-              selected: {_selectedRole},
-              onSelectionChanged: _isSubmitting ? null : (Set<String> newSelection) {
-                setState(() => _selectedRole = newSelection.first);
-              },
-            ),
-          ),
           const Divider(),
           if (_isSubmitting) const Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()),
           Expanded(

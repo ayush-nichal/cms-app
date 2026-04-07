@@ -57,14 +57,12 @@ class UserAssignment {
   final String channelId;
   final String channelName;
   final String platformName;
-  final String role;
 
   UserAssignment({
     required this.id,
     required this.channelId,
     required this.channelName,
     required this.platformName,
-    required this.role,
   });
 
   factory UserAssignment.fromJson(Map<String, dynamic> json) {
@@ -73,7 +71,6 @@ class UserAssignment {
       channelId: json['channel_id'] as String,
       channelName: json['channel']['name'] as String,
       platformName: json['channel']['platform']['name'] as String,
-      role: json['role'] as String,
     );
   }
 }
@@ -81,13 +78,11 @@ class UserAssignment {
 class CreateUserRequest {
   final String email;
   final String password;
-  final String role;
   final String? whatsappNumber;
 
   CreateUserRequest({
     required this.email,
     required this.password,
-    required this.role,
     this.whatsappNumber,
   });
 
@@ -95,7 +90,6 @@ class CreateUserRequest {
     return {
       'email': email,
       'password': password,
-      'role': role,
       if (whatsappNumber != null && whatsappNumber!.isNotEmpty) 'whatsapp_number': whatsappNumber,
     };
   }
@@ -104,14 +98,12 @@ class CreateUserRequest {
 class UpdateUserRequest {
   final String? email;
   final String? password;
-  final String? role;
   final String? whatsappNumber;
   final String? callmebotApiKey;
 
   UpdateUserRequest({
     this.email,
     this.password,
-    this.role,
     this.whatsappNumber,
     this.callmebotApiKey,
   });
@@ -120,7 +112,6 @@ class UpdateUserRequest {
     final map = <String, dynamic>{};
     if (email != null) map['email'] = email;
     if (password != null && password!.isNotEmpty) map['password'] = password;
-    if (role != null) map['role'] = role;
     if (whatsappNumber != null) map['whatsapp_number'] = whatsappNumber;
     if (callmebotApiKey != null) map['callmebot_api_key'] = callmebotApiKey;
     return map;

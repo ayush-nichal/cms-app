@@ -9,12 +9,14 @@ import '../providers/schedule_provider.dart';
 import '../data/schedule_model.dart';
 import '../../../../core/services/media_upload_service.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../core/utils/content_type_translator.dart';
 
 class ScheduleFormScreen extends ConsumerStatefulWidget {
   final String channelId;
+  final String platformName;
   final Schedule? schedule;
 
-  const ScheduleFormScreen({super.key, required this.channelId, this.schedule});
+  const ScheduleFormScreen({super.key, required this.channelId, required this.platformName, this.schedule});
 
   @override
   ConsumerState<ScheduleFormScreen> createState() => _ScheduleFormScreenState();
@@ -24,7 +26,7 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _titleController;
   late final TextEditingController _descController;
-  String _contentType = 'post';
+  String _contentType = 'text_post';
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   bool _isLoading = false;
@@ -44,6 +46,18 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
       _selectedDate = widget.schedule!.scheduledAt;
       _selectedTime = TimeOfDay.fromDateTime(widget.schedule!.scheduledAt);
       _currentMediaUrl = widget.schedule!.mediaUrl;
+    } else {
+      _initializeSupportedContentType();
+    }
+  }
+
+  void _initializeSupportedContentType() {
+    const primitives = ['text_post', 'image_post', 'short_form_video', 'long_form_video', 'carousel_post'];
+    for (var p in primitives) {
+      if (ContentTypeTranslator.isSupported(p, widget.platformName)) {
+        _contentType = p;
+        break;
+      }
     }
   }
 
@@ -71,7 +85,6 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
     if (date != null) {
       setState(() {
         _selectedDate = date;
-        // If they pick today but current selected time is past, clear it to force a new pick
         if (_selectedTime != null) {
           final checkDt = DateTime(date.year, date.month, date.day, _selectedTime!.hour, _selectedTime!.minute);
           if (checkDt.isBefore(DateTime.now())) {
@@ -115,11 +128,11 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
               onTap: () async {
                 Navigator.pop(ctx);
                 try {
-                  final XFile? file = _contentType == 'video' 
+                  final XFile? file = _contentType.contains('video') 
                     ? await _picker.pickVideo(source: ImageSource.gallery) 
                     : await _picker.pickImage(source: ImageSource.gallery);
                   if (file != null) {
-                    setState(() {
+                     setState(() {
                       _pickedFile = File(file.path);
                       _currentMediaUrl = null; 
                     });
@@ -135,7 +148,7 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
               onTap: () async {
                 Navigator.pop(ctx);
                 try {
-                  final XFile? file = _contentType == 'video' 
+                  final XFile? file = _contentType.contains('video') 
                     ? await _picker.pickVideo(source: ImageSource.camera) 
                     : await _picker.pickImage(source: ImageSource.camera);
                   if (file != null) {
@@ -169,13 +182,10 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
     try {
       final uploadService = ref.read(mediaUploadServiceProvider);
 
-      // If user replaced media, delete the old one
       if (widget.schedule?.mediaUrl != null && widget.schedule!.mediaUrl != _currentMediaUrl) {
          try {
            await uploadService.deleteMedia(widget.schedule!.mediaUrl!);
-         } catch(e) {
-           debugPrint('Could not delete old media: $e');
-         }
+         } catch(e) {}
       }
 
       if (_pickedFile != null) {
@@ -230,6 +240,8 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const primitives = ['text_post', 'image_post', 'short_form_video', 'long_form_video', 'carousel_post'];
+
     return Scaffold(
       appBar: AppBar(title: Text(widget.schedule == null ? 'New Schedule' : 'Edit Schedule')),
       body: SingleChildScrollView(
@@ -250,18 +262,42 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'post', label: Text('Post'), icon: Icon(Icons.image)),
-                  ButtonSegment(value: 'video', label: Text('Video'), icon: Icon(Icons.videocam)),
-                ],
-                selected: {_contentType},
-                onSelectionChanged: (val) {
-                  setState(() {
-                    _contentType = val.first;
-                    _pickedFile = null; 
-                  });
-                },
+              const Text('Content Type', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: primitives.map((primitive) {
+                  final isSupported = ContentTypeTranslator.isSupported(primitive, widget.platformName);
+                  final isSelected = _contentType == primitive;
+                  return ChoiceChip(
+                    label: Text(ContentTypeTranslator.translate(primitive, widget.platformName)),
+                    selected: isSelected,
+                    onSelected: isSupported 
+                      ? (bool selected) {
+                          if (selected) {
+                            setState(() {
+                              _contentType = primitive;
+                              _pickedFile = null;
+                            });
+                          }
+                        }
+                      : null,
+                    avatar: Icon(
+                      ContentTypeTranslator.getIcon(primitive),
+                      color: isSupported
+                          ? (isSelected ? Colors.white : Colors.blueGrey)
+                          : Colors.grey.shade400,
+                      size: 18,
+                    ),
+                    selectedColor: ContentTypeTranslator.getColor(primitive),
+                    labelStyle: TextStyle(
+                      color: isSupported
+                          ? (isSelected ? Colors.white : Colors.black87)
+                          : Colors.grey.shade400,
+                    ),
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -307,10 +343,10 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: _pickedFile != null 
-                           ? (_contentType == 'post' 
+                           ? (!_contentType.contains('video') 
                                ? Image.file(_pickedFile!, fit: BoxFit.cover) 
                                : Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.play_circle_fill, size: 48, color: Colors.blue), Text(p.basename(_pickedFile!.path))])))
-                           : (_contentType == 'post'
+                           : (!_contentType.contains('video')
                                ? Image.network(_currentMediaUrl!, fit: BoxFit.cover)
                                : Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.play_circle_fill, size: 48, color: Colors.blue), Text(p.basename(_currentMediaUrl!))])))
                       ),

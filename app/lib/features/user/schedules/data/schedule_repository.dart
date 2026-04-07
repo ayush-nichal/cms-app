@@ -70,13 +70,4 @@ class ScheduleRepository {
       throw Exception(_extractErrorMessage(e));
     }
   }
-
-  Future<Schedule> updateStatus(String id, String newStatus) async {
-    try {
-      final response = await dio.patch('/schedules/$id/status', data: {'status': newStatus});
-      return Schedule.fromJson(response.data as Map<String, dynamic>);
-    } catch (e) {
-      throw Exception(_extractErrorMessage(e));
-    }
-  }
 }
