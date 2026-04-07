@@ -16,7 +16,7 @@ class WorkloadBarChart extends StatelessWidget {
 
     if (data.isEmpty || data.every((d) => d.count == 0)) {
       return const Center(
-        child: Text('No workload data available', style: TextStyle(color: Colors.grey)),
+        child: Text('No workload data available', style: TextStyle(color: Colors.white70)),
       );
     }
 
@@ -25,9 +25,11 @@ class WorkloadBarChart extends StatelessWidget {
     // To create a horizontal bar chart, we rotate the whole chart by 90 degrees clockwise (1 quarterTurn).
     // The data that was X becomes Y visually.
     
-    return Padding(
-      padding: const EdgeInsets.only(left: 32.0, bottom: 16.0), // Extra padding for rotated axis labels
-      child: RotatedBox(
+    return SizedBox(
+      height: 140,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 32.0, bottom: 16.0), // Extra padding for rotated axis labels
+        child: RotatedBox(
         quarterTurns: 1,
         child: BarChart(
           BarChartData(
@@ -72,7 +74,7 @@ class WorkloadBarChart extends StatelessWidget {
                         padding: const EdgeInsets.only(right: 8.0),
                         child: Text(
                           handle,
-                          style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w600),
+                          style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600),
                           textAlign: TextAlign.right,
                         ),
                       ),
@@ -90,7 +92,7 @@ class WorkloadBarChart extends StatelessWidget {
                       quarterTurns: -1,
                       child: Text(
                         value.toInt().toString(),
-                        style: const TextStyle(fontSize: 10, color: Colors.grey),
+                        style: const TextStyle(fontSize: 10, color: Colors.white70),
                         textAlign: TextAlign.center,
                       ),
                     );
@@ -104,7 +106,7 @@ class WorkloadBarChart extends StatelessWidget {
               show: true,
               drawVerticalLine: false,
               horizontalInterval: 1,
-              getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.withOpacity(0.2), strokeWidth: 1),
+              getDrawingHorizontalLine: (value) => FlLine(color: Colors.white.withOpacity(0.3), strokeWidth: 1),
             ),
             borderData: FlBorderData(show: false),
             barGroups: data.asMap().entries.map((entry) {
@@ -116,7 +118,7 @@ class WorkloadBarChart extends StatelessWidget {
                   BarChartRodData(
                     toY: ch.count.toDouble(),
                     gradient: LinearGradient(
-                      colors: [Colors.teal.shade300, Colors.teal.shade700],
+                      colors: [Colors.white70, Colors.white],
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                     ),
@@ -130,6 +132,6 @@ class WorkloadBarChart extends StatelessWidget {
           swapAnimationDuration: const Duration(milliseconds: 400),
         ),
       ),
-    );
+    ));
   }
 }

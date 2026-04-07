@@ -18,7 +18,7 @@ class ContentMixDoughnut extends StatelessWidget {
 
     if (data.isEmpty || data.every((d) => d.count == 0)) {
       return const Center(
-        child: Text('No content data', style: TextStyle(color: Colors.grey)),
+        child: Text('No content data', style: TextStyle(color: Colors.white70)),
       );
     }
 
@@ -26,14 +26,15 @@ class ContentMixDoughnut extends StatelessWidget {
 
     return Column(
       children: [
-        Expanded(
+        SizedBox(
+          height: 140,
           child: Stack(
             alignment: Alignment.center,
             children: [
               PieChart(
                 PieChartData(
                   sectionsSpace: 2,
-                  centerSpaceRadius: 50,
+                  centerSpaceRadius: 35,
                   sections: data.map((item) {
                     final color = ContentTypeTranslator.getColor(item.contentType);
                     final showTitleInside = item.percent > 5;
@@ -41,8 +42,8 @@ class ContentMixDoughnut extends StatelessWidget {
                       color: color,
                       value: item.percent,
                       title: showTitleInside ? '${item.percent.toInt()}%' : '',
-                      radius: 40,
-                      titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                      radius: 30,
+                      titleStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
                     );
                   }).toList(),
                 ),
@@ -52,9 +53,9 @@ class ContentMixDoughnut extends StatelessWidget {
                 children: [
                   Text(
                     totalCount.toString(),
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
-                  const Text('posts', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                  const Text('posts', style: TextStyle(fontSize: 10, color: Colors.white70)),
                 ],
               ),
             ],
@@ -73,7 +74,7 @@ class ContentMixDoughnut extends StatelessWidget {
               children: [
                 Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
                 const SizedBox(width: 4),
-                Text(label, style: const TextStyle(fontSize: 10)),
+                Text(label, style: const TextStyle(fontSize: 10, color: Colors.white)),
               ],
             );
           }).toList(),

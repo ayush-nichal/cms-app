@@ -16,13 +16,13 @@ class PipelineBarChart extends StatelessWidget {
 
     if (data.isEmpty || data.every((d) => d.count == 0)) {
       return const Center(
-        child: Text('No scheduled content in this period', style: TextStyle(color: Colors.grey)),
+        child: Text('No scheduled content in this period', style: TextStyle(color: Colors.white70)),
       );
     }
 
     final double maxY = data.map((d) => d.count).reduce((a, b) => a > b ? a : b).toDouble();
 
-    return BarChart(
+    return SizedBox(height: 140, child: BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
         maxY: maxY + (maxY * 0.2), // Add 20% headroom
@@ -57,7 +57,7 @@ class PipelineBarChart extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
                     data[index].week,
-                    style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 );
               },
@@ -71,7 +71,7 @@ class PipelineBarChart extends StatelessWidget {
                 if (value == 0 || value % 1 != 0) return const SizedBox.shrink();
                 return Text(
                   value.toInt().toString(),
-                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                  style: const TextStyle(fontSize: 10, color: Colors.white70),
                   textAlign: TextAlign.right,
                 );
               },
@@ -84,7 +84,7 @@ class PipelineBarChart extends StatelessWidget {
           show: true,
           drawVerticalLine: false,
           horizontalInterval: 1,
-          getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.withOpacity(0.2), strokeWidth: 1),
+          getDrawingHorizontalLine: (value) => FlLine(color: Colors.white.withOpacity(0.3), strokeWidth: 1),
         ),
         borderData: FlBorderData(show: false),
         barGroups: data.asMap().entries.map((entry) {
@@ -95,7 +95,7 @@ class PipelineBarChart extends StatelessWidget {
             barRods: [
               BarChartRodData(
                 toY: weekData.count.toDouble(),
-                color: Colors.blue.shade600,
+                color: Colors.white,
                 width: 16,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
               ),
@@ -104,6 +104,6 @@ class PipelineBarChart extends StatelessWidget {
         }).toList(),
       ),
       swapAnimationDuration: const Duration(milliseconds: 400),
-    );
+    ));
   }
 }
