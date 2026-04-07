@@ -613,7 +613,7 @@ class _PlatformCardState extends ConsumerState<_PlatformCard> {
                   ),
                   InkWell(
                     onTap: () {
-                      context.go('/admin/platforms/${widget.stat.platformId}/stats');
+                      context.push('/admin/platforms/${widget.stat.platformId}/stats');
                     },
                     borderRadius: BorderRadius.circular(9999),
                     child: Container(

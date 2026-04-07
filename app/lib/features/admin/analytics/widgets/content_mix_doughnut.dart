@@ -7,8 +7,9 @@ class ContentMixDoughnut extends StatelessWidget {
   final List<ContentMixItem> data;
   final bool isLoading;
   final String platformName;
+  final Color textColor;
 
-  const ContentMixDoughnut({super.key, required this.data, this.isLoading = false, this.platformName = 'default'});
+  const ContentMixDoughnut({super.key, required this.data, this.isLoading = false, this.platformName = 'default', this.textColor = Colors.white});
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +18,8 @@ class ContentMixDoughnut extends StatelessWidget {
     }
 
     if (data.isEmpty || data.every((d) => d.count == 0)) {
-      return const Center(
-        child: Text('No content data', style: TextStyle(color: Colors.white70)),
+      return Center(
+        child: Text('No content data', style: TextStyle(color: textColor.withOpacity(0.7))),
       );
     }
 
@@ -53,9 +54,9 @@ class ContentMixDoughnut extends StatelessWidget {
                 children: [
                   Text(
                     totalCount.toString(),
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
                   ),
-                  const Text('posts', style: TextStyle(fontSize: 10, color: Colors.white70)),
+                  Text('posts', style: TextStyle(fontSize: 10, color: textColor.withOpacity(0.7))),
                 ],
               ),
             ],
@@ -74,7 +75,7 @@ class ContentMixDoughnut extends StatelessWidget {
               children: [
                 Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
                 const SizedBox(width: 4),
-                Text(label, style: const TextStyle(fontSize: 10, color: Colors.white)),
+                Text(label, style: TextStyle(fontSize: 10, color: textColor)),
               ],
             );
           }).toList(),
