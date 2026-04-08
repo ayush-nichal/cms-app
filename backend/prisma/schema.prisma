@@ -73,8 +73,8 @@ model UserChannelAssignment {
   channel_id String
   created_at DateTime @default(now())
 
-  user       User     @relation(fields: [user_id], references: [id])
-  channel    Channel  @relation(fields: [channel_id], references: [id])
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  channel    Channel  @relation(fields: [channel_id], references: [id], onDelete: Cascade)
 }
 
 model Schedule {
@@ -89,7 +89,7 @@ model Schedule {
   created_at        DateTime       @default(now())
   updated_at        DateTime       @updatedAt
 
-  channel           Channel        @relation(fields: [channel_id], references: [id])
+  channel           Channel        @relation(fields: [channel_id], references: [id], onDelete: Cascade)
   creator           User           @relation("ScheduleCreator", fields: [created_by], references: [id])
   notification_logs NotificationLog[]
 }
@@ -103,7 +103,7 @@ model NotificationLog {
   sent_at     DateTime
   status      NotificationStatus
 
-  user          User     @relation(fields: [user_id], references: [id])
-  targetChannel Channel  @relation(fields: [channel_id], references: [id])
-  schedule      Schedule @relation(fields: [schedule_id], references: [id])
+  user          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  targetChannel Channel  @relation(fields: [channel_id], references: [id], onDelete: Cascade)
+  schedule      Schedule @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
 }

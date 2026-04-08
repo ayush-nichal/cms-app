@@ -7,6 +7,8 @@ import 'package:video_player/video_player.dart';
 import '../providers/schedule_provider.dart';
 import '../data/schedule_model.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
+import '../../../../shared/design/design_tokens.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ScheduleDetailScreen extends ConsumerStatefulWidget {
   final Schedule schedule;
@@ -45,114 +47,277 @@ class _ScheduleDetailScreenState extends ConsumerState<ScheduleDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final schedule = widget.schedule;
+    final isVideo = schedule.mediaUrl != null &&
+        (schedule.mediaUrl!.toLowerCase().endsWith('.mp4') || schedule.mediaUrl!.toLowerCase().endsWith('.mov'));
+
+    // Content type badge styles
+    const typeStyles = <String, ({String label, Color bg, Color fg})>{
+      'text_post': (label: 'TEXT POST', bg: Color(0xFFF3E5F5), fg: Color(0xFF6A1B9A)),
+      'image_post': (label: 'IMAGE POST', bg: Color(0xFFE3F2FD), fg: Color(0xFF1565C0)),
+      'short_form_video': (label: 'SHORT FORM', bg: Color(0xFFE8F5E9), fg: Color(0xFF2E7D32)),
+      'long_form_video': (label: 'LONG VIDEO', bg: Color(0xFFFFF3E0), fg: Color(0xFFE65100)),
+      'carousel_post': (label: 'CAROUSEL', bg: Color(0xFFFCE4EC), fg: Color(0xFFC62828)),
+    };
+    final ts = typeStyles[schedule.contentType] ?? (label: schedule.contentType.toUpperCase(), bg: surfaceLow, fg: onSurfaceVar);
+
+    Widget contentTypePill() {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: ts.bg,
+          borderRadius: BorderRadius.circular(9999),
+        ),
+        child: Text(
+          ts.label,
+          style: GoogleFonts.epilogue(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: ts.fg,
+            letterSpacing: 10 * 0.05,
+          ),
+        ),
+      );
+    }
+
+    NavigationBar userNavBar() {
+      return NavigationBar(
+        backgroundColor: surfaceWhite,
+        indicatorColor: const Color(0xFFE8F0FB),
+        height: 72,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        selectedIndex: 0,
+        onDestinationSelected: (index) {
+          if (index == 0) context.go('/user/schedules');
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.grid_view_outlined, color: onSurfaceVar),
+            selectedIcon: Icon(Icons.grid_view_rounded, color: primary),
+            label: 'Schedules',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.subscriptions_outlined, color: onSurfaceVar),
+            selectedIcon: Icon(Icons.subscriptions_rounded, color: primary),
+            label: 'Channels',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.people_outline_rounded, color: onSurfaceVar),
+            selectedIcon: Icon(Icons.people_rounded, color: primary),
+            label: 'Profile',
+          ),
+        ],
+      );
+    }
+
     return Scaffold(
+      backgroundColor: surface,
+      bottomNavigationBar: userNavBar(),
       appBar: AppBar(
-        title: const Text('Schedule Details'),
+        backgroundColor: surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: primary),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          'Schedule Details',
+          style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w600, color: onSurface),
+        ),
         actions: [
-          if (widget.isCreator)
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => context.push('/user/schedules/edit', extra: {'channelId': widget.schedule.channelId, 'schedule': widget.schedule}),
-            ),
-          if (widget.isCreator)
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (_) => const ConfirmDialog(title: 'Delete Schedule', message: 'Are you sure?', confirmText: 'Delete'),
-                );
-                if (confirm == true) {
-                  try {
-                    await ref.read(scheduleProvider.notifier).deleteSchedule(widget.schedule.id, widget.schedule.channelId);
-                    if (context.mounted) {
-                      context.pop();
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deleted')));
-                    }
-                  } catch (e) {
-                    if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red));
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded, color: onSurfaceVar),
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (_) => const ConfirmDialog(title: 'Delete Schedule', message: 'Are you sure?', confirmText: 'Delete'),
+              );
+              if (confirm == true) {
+                try {
+                  await ref.read(scheduleProvider.notifier).deleteSchedule(schedule.id, schedule.channelId);
+                  if (context.mounted) {
+                    context.pop();
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deleted')));
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+                    );
                   }
                 }
-              },
-            ),
+              }
+            },
+          ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(widget.schedule.contentType == 'video' ? Icons.videocam : Icons.image, color: Colors.blue),
-                const SizedBox(width: 8),
-                Text(widget.schedule.contentType.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(widget.schedule.title, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 24),
-
-            if (widget.schedule.mediaUrl != null) ...[
-              if (_videoController != null)
-                if (_videoController!.value.isInitialized)
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                         _videoController!.value.isPlaying ? _videoController!.pause() : _videoController!.play();
-                      });
-                    },
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        AspectRatio(
-                          aspectRatio: _videoController!.value.aspectRatio,
-                          child: VideoPlayer(_videoController!),
-                        ),
-                        if (!_videoController!.value.isPlaying)
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                            child: const Icon(Icons.play_arrow, color: Colors.white, size: 48),
-                          ),
-                      ],
-                    ),
-                  )
-                else
-                  const AspectRatio(aspectRatio: 16/9, child: Center(child: CircularProgressIndicator()))
-              else
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: CachedNetworkImage(
-                    imageUrl: widget.schedule.mediaUrl!,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
-                    errorWidget: (context, url, error) => const SizedBox(height: 200, child: Center(child: Icon(Icons.error))),
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: surfaceWhite,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: const [BoxShadow(color: Color(0x0A191C1D), blurRadius: 32, offset: Offset(0, 12))],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  contentTypePill(),
+                  const SizedBox(height: 16),
+                  Text(
+                    schedule.title.toUpperCase(),
+                    style: GoogleFonts.publicSans(fontSize: 32, fontWeight: FontWeight.w800, color: onSurface),
                   ),
-                ),
-              const SizedBox(height: 24),
-            ],
-
-            Row(
-              children: [
-                const Icon(Icons.calendar_today, size: 20, color: Colors.grey),
-                const SizedBox(width: 8),
-                Text(DateFormat('EEEE, d MMMM yyyy \'at\' hh:mm a').format(widget.schedule.scheduledAt), style: const TextStyle(fontSize: 16)),
-              ],
+                  const SizedBox(height: 20),
+                  Container(height: 1, color: surfaceLow),
+                  const SizedBox(height: 20),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: surfaceLow,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.calendar_month_rounded, color: primary, size: 24),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'SCHEDULED FOR',
+                              style: GoogleFonts.epilogue(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                                color: onSurfaceVar,
+                                letterSpacing: 10 * 0.06,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              DateFormat('EEEE, d MMMM yyyy').format(schedule.scheduledAt),
+                              style: GoogleFonts.publicSans(fontSize: 18, fontWeight: FontWeight.w600, color: onSurface),
+                            ),
+                            Text(
+                              'at ${DateFormat('hh:mm a').format(schedule.scheduledAt)}',
+                              style: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurfaceVar),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Container(height: 1, color: surfaceLow),
+                  const SizedBox(height: 20),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE8F0FB),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.person_rounded, color: primary, size: 24),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'CREATED BY',
+                              style: GoogleFonts.epilogue(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                                color: onSurfaceVar,
+                                letterSpacing: 10 * 0.06,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              schedule.creatorName ?? schedule.createdById,
+                              style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w500, color: onSurface),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 24),
-            const Divider(height: 32),
-            if (widget.schedule.description != null && widget.schedule.description!.isNotEmpty) ...[
-              const Text('Description', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
-              Text(widget.schedule.description!),
+            if (schedule.mediaUrl != null) ...[
+              const SizedBox(height: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: SizedBox(
+                  height: 200,
+                  width: double.infinity,
+                  child: isVideo
+                      ? Container(
+                          color: surfaceLow,
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.play_circle_rounded, size: 64, color: primary),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Tap to preview video',
+                                  style: GoogleFonts.plusJakartaSans(fontSize: 12, color: onSurfaceVar),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: schedule.mediaUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => const Center(child: CircularProgressIndicator(color: primary)),
+                          errorWidget: (_, __, ___) => const Center(child: Icon(Icons.error_outline_rounded)),
+                        ),
+                ),
+              ),
             ],
-            const SizedBox(height: 16),
-            Text('Created by: ${widget.schedule.creatorName ?? widget.schedule.createdById}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            if (schedule.description != null && schedule.description!.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: primaryGradient,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  schedule.description!.length <= 30 ? schedule.description! : '${schedule.description!.substring(0, 30)}…',
+                  style: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+                ),
+              ),
+            ],
+            const SizedBox(height: 100),
           ],
         ),
       ),
+      floatingActionButton: widget.isCreator
+          ? FloatingActionButton(
+              backgroundColor: primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              onPressed: () => context.push('/user/schedules/edit', extra: {'channelId': schedule.channelId, 'schedule': schedule}),
+              child: const Icon(Icons.edit_rounded, color: Colors.white),
+            )
+          : null,
     );
   }
 }

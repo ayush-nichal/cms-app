@@ -5,11 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/schedule_provider.dart';
 import '../data/schedule_model.dart';
 import '../../../../core/services/media_upload_service.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/utils/content_type_translator.dart';
+import '../../../../shared/design/design_tokens.dart';
 
 class ScheduleFormScreen extends ConsumerStatefulWidget {
   final String channelId;
@@ -241,162 +243,375 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
   @override
   Widget build(BuildContext context) {
     const primitives = ['text_post', 'image_post', 'short_form_video', 'long_form_video', 'carousel_post'];
+    final isEditMode = widget.schedule != null;
+
+    NavigationBar userNavBar() {
+      return NavigationBar(
+        backgroundColor: surfaceWhite,
+        indicatorColor: const Color(0xFFE8F0FB),
+        height: 72,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        selectedIndex: 0,
+        onDestinationSelected: (index) {
+          if (index == 0) context.go('/user/schedules');
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.grid_view_outlined, color: onSurfaceVar),
+            selectedIcon: Icon(Icons.grid_view_rounded, color: primary),
+            label: 'Schedules',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.subscriptions_outlined, color: onSurfaceVar),
+            selectedIcon: Icon(Icons.subscriptions_rounded, color: primary),
+            label: 'Channels',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.people_outline_rounded, color: onSurfaceVar),
+            selectedIcon: Icon(Icons.people_rounded, color: primary),
+            label: 'Profile',
+          ),
+        ],
+      );
+    }
+
+    TextStyle labelStyle() => GoogleFonts.epilogue(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: onSurfaceVar,
+          letterSpacing: 11 * 0.06,
+        );
+
+    InputDecoration inputDecoration({required String hintText, Widget? prefixIcon, Widget? suffixIcon}) {
+      return InputDecoration(
+        hintText: hintText,
+        hintStyle: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurfaceVar),
+        filled: true,
+        fillColor: surfaceWhite,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        prefixIcon: prefixIcon,
+        suffixIcon: suffixIcon,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: const Color(0x40C1C6D4)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: const Color(0x40C1C6D4)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: primary, width: 2),
+        ),
+      );
+    }
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.schedule == null ? 'New Schedule' : 'Edit Schedule')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                controller: _titleController,
-                maxLength: 100,
-                decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),
-                validator: (v) {
-                   final req = Validators.required(v, 'Title');
-                   if (req != null) return req;
-                   return Validators.maxLength(v, 100, 'Title');
-                },
-              ),
-              const SizedBox(height: 16),
-              const Text('Content Type', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: primitives.map((primitive) {
-                  final isSupported = ContentTypeTranslator.isSupported(primitive, widget.platformName);
-                  final isSelected = _contentType == primitive;
-                  return ChoiceChip(
-                    label: Text(ContentTypeTranslator.translate(primitive, widget.platformName)),
-                    selected: isSelected,
-                    onSelected: isSupported 
-                      ? (bool selected) {
-                          if (selected) {
-                            setState(() {
-                              _contentType = primitive;
-                              _pickedFile = null;
-                            });
-                          }
-                        }
-                      : null,
-                    avatar: Icon(
-                      ContentTypeTranslator.getIcon(primitive),
-                      color: isSupported
-                          ? (isSelected ? Colors.white : Colors.blueGrey)
-                          : Colors.grey.shade400,
-                      size: 18,
+      backgroundColor: surface,
+      bottomNavigationBar: userNavBar(),
+      appBar: AppBar(
+        backgroundColor: surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: primary),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          isEditMode ? 'Edit Schedule' : 'New Schedule',
+          style: GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w600, color: onSurface),
+        ),
+      ),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 180),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 24),
+                  Text(
+                    'SCHEDULE CONFIGURATION',
+                    style: GoogleFonts.epilogue(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: primary,
+                      letterSpacing: 11 * 0.08,
                     ),
-                    selectedColor: ContentTypeTranslator.getColor(primitive),
-                    labelStyle: TextStyle(
-                      color: isSupported
-                          ? (isSelected ? Colors.white : Colors.black87)
-                          : Colors.grey.shade400,
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descController,
-                maxLength: 500,
-                maxLines: 4,
-                decoration: const InputDecoration(labelText: 'Description (Optional)', border: OutlineInputBorder()),
-              ),
-              const SizedBox(height: 16),
-              const Text('Attach Media', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
-              if (_pickedFile == null && _currentMediaUrl == null)
-                InkWell(
-                  onTap: _handleMediaSelection,
-                  child: Container(
-                    height: 120,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey, style: BorderStyle.solid),
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.grey.shade100,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
-                        SizedBox(height: 8),
-                        Text('Add photo or video', style: TextStyle(color: Colors.grey)),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Schedule Content',
+                    style: GoogleFonts.publicSans(fontSize: 28, fontWeight: FontWeight.w700, color: onSurface),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Define your post metadata, schedule timing, and creative assets for the upcoming broadcast.',
+                    style: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurfaceVar, height: 1.5),
+                  ),
+                  const SizedBox(height: 32),
+                  Text('POST TITLE', style: labelStyle()),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _titleController,
+                    maxLength: 100,
+                    style: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurface),
+                    decoration: inputDecoration(hintText: 'e.g., Q3 Product Launch Highlights'),
+                    validator: (v) {
+                      final req = Validators.required(v, 'Title');
+                      if (req != null) return req;
+                      return Validators.maxLength(v, 100, 'Title');
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  Text('DESCRIPTION (OPTIONAL)', style: labelStyle()),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _descController,
+                    maxLength: 500,
+                    maxLines: 4,
+                    minLines: 3,
+                    style: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurface),
+                    decoration: inputDecoration(hintText: 'Briefly describe the context of this schedule...'),
+                  ),
+                  const SizedBox(height: 20),
+                  Text('CONTENT TYPE', style: labelStyle()),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: primitives.map((primitive) {
+                      final isSupported = ContentTypeTranslator.isSupported(primitive, widget.platformName);
+                      final isSelected = _contentType == primitive;
+                      final label = ContentTypeTranslator.translate(primitive, widget.platformName);
+
+                      return GestureDetector(
+                        onTap: isSupported
+                            ? () {
+                                setState(() {
+                                  _contentType = primitive;
+                                  _pickedFile = null;
+                                });
+                              }
+                            : null,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            gradient: isSelected ? primaryGradient : null,
+                            color: isSelected ? null : surfaceWhite,
+                            borderRadius: BorderRadius.circular(9999),
+                            border: isSelected
+                                ? null
+                                : Border.all(color: const Color(0x40C1C6D4), width: 1),
+                          ),
+                          child: Text(
+                            label,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                              color: isSupported
+                                  ? (isSelected ? Colors.white : onSurface)
+                                  : onSurfaceVar,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+                  Text('ATTACH MEDIA', style: labelStyle()),
+                  const SizedBox(height: 8),
+                  if (_pickedFile == null && _currentMediaUrl == null)
+                    GestureDetector(
+                      onTap: _handleMediaSelection,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 32),
+                        decoration: BoxDecoration(
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0x66C1C6D4)),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.add_a_photo_rounded, color: primary, size: 32),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Add photo or video',
+                              style: GoogleFonts.plusJakartaSans(fontSize: 15, fontWeight: FontWeight.w600, color: onSurface),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Drag and drop or click to browse',
+                              style: GoogleFonts.plusJakartaSans(fontSize: 12, color: onSurfaceVar),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: SizedBox(
+                            height: 160,
+                            width: double.infinity,
+                            child: _pickedFile != null
+                                ? (!_contentType.contains('video')
+                                    ? Image.file(_pickedFile!, fit: BoxFit.cover)
+                                    : Container(
+                                        color: surfaceLow,
+                                        child: Center(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.play_circle_rounded, size: 56, color: primary),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                p.basename(_pickedFile!.path),
+                                                style: GoogleFonts.plusJakartaSans(fontSize: 12, color: onSurfaceVar),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ))
+                                : (!_contentType.contains('video')
+                                    ? Image.network(_currentMediaUrl!, fit: BoxFit.cover)
+                                    : Container(
+                                        color: surfaceLow,
+                                        child: Center(
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.play_circle_rounded, size: 56, color: primary),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                p.basename(_currentMediaUrl!),
+                                                style: GoogleFonts.plusJakartaSans(fontSize: 12, color: onSurfaceVar),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      )),
+                          ),
+                        ),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _pickedFile = null;
+                                _currentMediaUrl = null;
+                              });
+                            },
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: const BoxDecoration(color: surfaceWhite, shape: BoxShape.circle),
+                              child: const Icon(Icons.close_rounded, color: errorRed, size: 18),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                  ),
-                )
-              else
-                Stack(
-                  alignment: Alignment.topRight,
-                  children: [
-                    Container(
-                      height: 160,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: _pickedFile != null 
-                           ? (!_contentType.contains('video') 
-                               ? Image.file(_pickedFile!, fit: BoxFit.cover) 
-                               : Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.play_circle_fill, size: 48, color: Colors.blue), Text(p.basename(_pickedFile!.path))])))
-                           : (!_contentType.contains('video')
-                               ? Image.network(_currentMediaUrl!, fit: BoxFit.cover)
-                               : Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.play_circle_fill, size: 48, color: Colors.blue), Text(p.basename(_currentMediaUrl!))])))
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.cancel, color: Colors.red),
-                      onPressed: () {
-                        setState(() {
-                          _pickedFile = null;
-                          _currentMediaUrl = null;
-                        });
-                      },
-                    )
+                  if (_isUploading) ...[
+                    const SizedBox(height: 16),
+                    Text('Uploading media...', style: GoogleFonts.plusJakartaSans(color: onSurfaceVar)),
+                    const SizedBox(height: 4),
+                    const LinearProgressIndicator(),
                   ],
-                ),
-              if (_isUploading) ...[
-                const SizedBox(height: 16),
-                const Text('Uploading media...'),
-                const SizedBox(height: 4),
-                const LinearProgressIndicator(),
-              ],
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _pickDate,
-                      icon: const Icon(Icons.calendar_today),
-                      label: Text(_selectedDate == null ? 'Pick Date' : DateFormat('MMM d, yyyy').format(_selectedDate!)),
+                  const SizedBox(height: 20),
+                  Text('PICK DATE', style: labelStyle()),
+                  const SizedBox(height: 8),
+                  InkWell(
+                    onTap: _pickDate,
+                    borderRadius: BorderRadius.circular(12),
+                    child: IgnorePointer(
+                      child: TextFormField(
+                        controller: TextEditingController(
+                          text: _selectedDate == null ? '' : DateFormat('MM/dd/yyyy').format(_selectedDate!),
+                        ),
+                        style: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurface),
+                        decoration: inputDecoration(
+                          hintText: 'MM/DD/YYYY',
+                          prefixIcon: const Icon(Icons.calendar_today_rounded, color: primary, size: 18),
+                          suffixIcon: const Icon(Icons.calendar_month_rounded, color: onSurfaceVar, size: 18),
+                        ),
+                        validator: (_) => _selectedDate == null ? 'Date is required' : null,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _pickTime,
-                      icon: const Icon(Icons.access_time),
-                      label: Text(_selectedTime == null ? 'Pick Time' : _selectedTime!.format(context)),
+                  const SizedBox(height: 12),
+                  Text('PICK TIME', style: labelStyle()),
+                  const SizedBox(height: 8),
+                  InkWell(
+                    onTap: _pickTime,
+                    borderRadius: BorderRadius.circular(12),
+                    child: IgnorePointer(
+                      child: TextFormField(
+                        controller: TextEditingController(text: _selectedTime == null ? '' : _selectedTime!.format(context)),
+                        style: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurface),
+                        decoration: inputDecoration(
+                          hintText: '02:00 PM',
+                          prefixIcon: const Icon(Icons.schedule_rounded, color: primary, size: 18),
+                          suffixIcon: const Icon(Icons.access_time_rounded, color: onSurfaceVar, size: 18),
+                        ),
+                        validator: (_) => _selectedTime == null ? 'Time is required' : null,
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 32),
                 ],
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: (_isLoading || _isUploading) ? null : _submit,
-                style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-                child: (_isLoading || _isUploading) ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Save Schedule'),
-              )
-            ],
+            ),
           ),
-        ),
+          // Sticky save button
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              color: surface,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: SafeArea(
+                top: false,
+                child: SizedBox(
+                  height: 54,
+                  width: double.infinity,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(9999),
+                    onTap: (_isLoading || _isUploading) ? null : _submit,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: primaryGradient,
+                        borderRadius: BorderRadius.circular(9999),
+                      ),
+                      child: Center(
+                        child: (_isLoading || _isUploading)
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                              )
+                            : Text(
+                                isEditMode ? 'SAVE CHANGES' : 'SAVE SCHEDULE',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  letterSpacing: 15 * 0.04,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -16,5 +16,6 @@ router.delete('/:id', asyncHandler(userController.delete));
 router.get('/:id/assignments', asyncHandler(userController.getAssignments));
 router.post('/:id/assignments', asyncHandler(userController.addAssignment));
 router.delete('/:id/assignments/:channelId', asyncHandler(userController.removeAssignment));
+router.post('/:id/send-reset-link', asyncHandler(userController.sendResetLink));
 
 module.exports = router;

@@ -25,6 +25,7 @@ class ScheduleService {
         take: parseInt(limit, 10),
         orderBy: { scheduled_at: 'desc' },
         include: {
+          channel: { include: { platform: true } },
           creator: { select: { email: true } }
         }
       })
@@ -37,6 +38,7 @@ class ScheduleService {
     const schedule = await prisma.schedule.findUnique({
       where: { id },
       include: {
+        channel: { include: { platform: true } },
         creator: { select: { email: true } }
       }
     });

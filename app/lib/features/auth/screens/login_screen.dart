@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/forgot_password_dialog.dart';
 
 // Color Tokens
 const surface = Color(0xFFF8FAFB);
@@ -204,7 +205,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                           TextButton(
                             onPressed: () {
-                              // Forgot password action
+                              showDialog(
+                                context: context,
+                                builder: (context) => const ForgotPasswordDialog(),
+                              );
                             },
                             style: TextButton.styleFrom(
                               foregroundColor: primary,

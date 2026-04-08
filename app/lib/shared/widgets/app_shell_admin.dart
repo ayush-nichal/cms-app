@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../features/auth/providers/auth_provider.dart';
+import '../design/design_tokens.dart';
 import 'error_banner.dart';
 
 class AppShellAdmin extends ConsumerWidget {
@@ -36,19 +36,34 @@ class AppShellAdmin extends ConsumerWidget {
     return Scaffold(
       body: ErrorBannerOverlay(child: child),
       bottomNavigationBar: NavigationBar(
+        backgroundColor: surfaceWhite,
+        indicatorColor: const Color(0xFFE8F0FB),
+        height: 72,
         selectedIndex: calculateSelectedIndex(context),
         onDestinationSelected: (index) => onItemTapped(index, context),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+          (states) {
+            final isSelected = states.contains(WidgetState.selected);
+            return TextStyle(
+              color: isSelected ? primary : onSurfaceVar,
+            );
+          },
+        ),
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.bar_chart),
+            icon: Icon(Icons.bar_chart_rounded),
+            selectedIcon: Icon(Icons.bar_chart_rounded),
             label: 'Dashboard',
           ),
           NavigationDestination(
-            icon: Icon(Icons.layers),
+            icon: Icon(Icons.layers_outlined),
+            selectedIcon: Icon(Icons.layers_rounded),
             label: 'Channels',
           ),
           NavigationDestination(
-            icon: Icon(Icons.people),
+            icon: Icon(Icons.people_outline_rounded),
+            selectedIcon: Icon(Icons.people_rounded),
             label: 'Users',
           ),
         ],

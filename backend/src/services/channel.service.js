@@ -6,6 +6,9 @@ class ChannelService {
     return prisma.channel.findMany({
       where: { platform_id },
       include: {
+        _count: {
+          select: { assignments: true }
+        },
         schedules: {
           where: { scheduled_at: { lte: new Date() } },
           orderBy: { scheduled_at: 'desc' },
@@ -52,13 +55,6 @@ class ChannelService {
     });
 
     if (!channel) throw { statusCode: 404, message: 'Channel not found' };
-    
-    if (channel._count.assignments > 0) {
-      throw { statusCode: 400, message: 'Cannot delete channel: users are assigned to it' };
-    }
-    if (channel._count.schedules > 0) {
-      throw { statusCode: 400, message: 'Cannot delete channel: schedules exist for it' };
-    }
 
     return prisma.channel.delete({ where: { id } });
   }

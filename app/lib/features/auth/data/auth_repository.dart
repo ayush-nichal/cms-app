@@ -65,4 +65,36 @@ class AuthRepository {
       return null;
     }
   }
+  Future<void> resetPassword({required String token, required String newPassword}) async {
+    try {
+      await dio.post(
+        '/auth/reset-password',
+        data: {
+          'token': token,
+          'password': newPassword,
+        },
+      );
+    } catch (e) {
+      if (e is DioException) {
+        final message = e.response?.data['message'] ?? 'Failed to reset password';
+        throw Exception(message);
+      }
+      throw Exception('An unexpected error occurred');
+    }
+  }
+
+  Future<void> forgotPassword(String email) async {
+    try {
+      await dio.post(
+        '/auth/forgot-password',
+        data: {'email': email},
+      );
+    } catch (e) {
+      if (e is DioException) {
+        final message = e.response?.data['message'] ?? 'Failed to request reset link';
+        throw Exception(message);
+      }
+      throw Exception('An unexpected error occurred');
+    }
+  }
 }

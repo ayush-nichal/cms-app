@@ -1,137 +1,263 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/user_provider.dart';
-import '../../../../shared/widgets/confirm_dialog.dart';
+import '../../../../shared/design/design_tokens.dart';
 
-class UsersScreen extends ConsumerWidget {
+class UsersScreen extends ConsumerStatefulWidget {
   const UsersScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<UsersScreen> createState() => _UsersScreenState();
+}
+
+class _UsersScreenState extends ConsumerState<UsersScreen> {
+  String _searchQuery = '';
+  final _searchController = TextEditingController();
+
+  static const _avatarTints = <Color>[
+    Color(0xFFBBD6F4),
+    Color(0xFFB8E4D0),
+    Color(0xFFE4C4B8),
+    Color(0xFFD4B8E4),
+    Color(0xFFC8C8C8),
+  ];
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Widget _pill({
+    required Widget child,
+    required Color background,
+    EdgeInsets padding = const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+  }) {
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(9999),
+      ),
+      child: child,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(userProvider);
     final notifier = ref.read(userProvider.notifier);
 
-    return Scaffold(
-      body: state.isLoading && state.users.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : state.users.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No users yet.\nTap + to add one.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: () => notifier.loadUsers(),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(8),
-                    itemCount: state.users.length,
-                    itemBuilder: (context, index) {
-                      final user = state.users[index];
-                      final isCreator = user.role == 'creator';
+    final filteredUsers = state.users.where((user) {
+      final query = _searchQuery.toLowerCase();
+      return user.email.toLowerCase().contains(query) || 
+             (user.whatsappNumber?.toLowerCase().contains(query) ?? false);
+    }).toList();
 
-                      return Card(
-                        color: user.isActive ? null : Colors.grey.shade200,
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        child: ListTile(
-                          onTap: () => context.push('/admin/users/${user.id}'),
-                          onLongPress: () {
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (_) => SafeArea(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ListTile(
-                                      leading: const Icon(Icons.edit),
-                                      title: const Text('Edit User'),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        context.push('/admin/users/edit', extra: user);
-                                      },
-                                    ),
-                                    ListTile(
-                                      leading: Icon(Icons.delete, color: user.isActive ? Colors.red : Colors.grey),
-                                      title: Text('Deactivate User', style: TextStyle(color: user.isActive ? Colors.red : Colors.grey)),
-                                      onTap: user.isActive ? () async {
-                                        Navigator.pop(context);
-                                        final confirm = await showDialog<bool>(
-                                          context: context,
-                                          builder: (_) => const ConfirmDialog(
-                                            title: 'Deactivate User',
-                                            message: 'Are you sure you want to deactivate this user? They will no longer be able to log in.',
-                                            confirmText: 'Deactivate',
-                                          ),
-                                        );
-                                        if (confirm == true) {
-                                          notifier.softDeleteUser(user.id).catchError((e) {
-                                            if (context.mounted) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-                                              );
-                                            }
-                                          });
-                                        }
-                                      } : null, // disable if already inactive
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
+    return Scaffold(
+      backgroundColor: surface,
+      body: RefreshIndicator(
+        color: primary,
+        onRefresh: () => notifier.loadUsers(),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 24),
+              Text('Users', style: GoogleFonts.publicSans(fontSize: 26, fontWeight: FontWeight.w700, color: onSurface)),
+              const SizedBox(height: 4),
+              Text(
+                'WORKSPACE MANAGEMENT',
+                style: GoogleFonts.epilogue(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 11 * 0.05,
+                  color: onSurfaceVar,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text('Team Directory', style: GoogleFonts.publicSans(fontSize: 32, fontWeight: FontWeight.w700, color: onSurface)),
+              const SizedBox(height: 20),
+              
+              // Search Bar
+              Container(
+                decoration: BoxDecoration(
+                  color: surfaceWhite,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(color: Color(0x05191C1D), blurRadius: 20, offset: Offset(0, 4)),
+                  ],
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (value) => setState(() => _searchQuery = value),
+                  style: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurface),
+                  decoration: InputDecoration(
+                    hintText: 'Search by email or phone...',
+                    hintStyle: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurfaceVar.withOpacity(0.5)),
+                    prefixIcon: const Icon(Icons.search_rounded, color: onSurfaceVar, size: 20),
+                    suffixIcon: _searchQuery.isNotEmpty 
+                      ? IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 18),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
                           },
-                          leading: CircleAvatar(
-                            backgroundColor: user.isActive ? Colors.blue.shade100 : Colors.grey.shade400,
-                            child: Icon(Icons.person, color: user.isActive ? Colors.blue : Colors.grey),
-                          ),
-                          title: Text(
-                            user.email,
-                            style: TextStyle(
-                              decoration: user.isActive ? null : TextDecoration.lineThrough,
-                              color: user.isActive ? null : Colors.grey,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
-                            child: Row(
-                              children: [
-                                Chip(
-                                  label: Text(
-                                    user.role.toUpperCase(),
-                                    style: TextStyle(color: user.isActive ? (isCreator ? Colors.blue.shade900 : Colors.amber.shade900) : Colors.grey.shade700, fontSize: 10),
-                                  ),
-                                  backgroundColor: user.isActive ? (isCreator ? Colors.blue.shade100 : Colors.amber.shade100) : Colors.grey.shade300,
-                                  padding: EdgeInsets.zero,
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                                const SizedBox(width: 8),
-                                if (user.assignments.isNotEmpty)
-                                  Chip(
-                                    label: Text(
-                                      '${user.assignments.length} Channels',
-                                      style: TextStyle(color: user.isActive ? Colors.black87 : Colors.grey.shade700, fontSize: 10),
-                                    ),
-                                    backgroundColor: user.isActive ? Colors.grey.shade200 : Colors.grey.shade300,
-                                    padding: EdgeInsets.zero,
-                                    visualDensity: VisualDensity.compact,
-                                  ),
-                                if (!user.isActive) ...[
-                                  const SizedBox(width: 8),
-                                  const Text('INACTIVE', style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
-                                ]
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                        ) 
+                      : null,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
                 ),
+              ),
+
+              const SizedBox(height: 24),
+              if (state.isLoading && state.users.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.only(top: 80),
+                  child: Center(child: CircularProgressIndicator(color: primary)),
+                )
+              else if (state.users.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 80),
+                  child: Center(
+                    child: Text(
+                      'No users yet.\nTap + to add one.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurfaceVar),
+                    ),
+                  ),
+                )
+              else if (filteredUsers.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 80),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        const Icon(Icons.search_off_rounded, size: 48, color: outlineGhost),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No results found for "$_searchQuery"',
+                          style: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurfaceVar),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: filteredUsers.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final user = filteredUsers[index];
+                    final tint = user.isActive ? _avatarTints[index % _avatarTints.length] : const Color(0xFFC8C8C8);
+
+                    final role = user.role.toUpperCase();
+                    final channelsCount = user.assignments.length;
+                    final channelLabel = channelsCount == 1 ? 'Channel' : 'Channels';
+
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () => context.push('/admin/users/${user.id}'),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: surfaceWhite,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: const [
+                            BoxShadow(color: Color(0x0A191C1D), blurRadius: 32, offset: Offset(0, 12)),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: tint.withOpacity(0.65),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.person_rounded,
+                                color: user.isActive ? primary : onSurfaceVar,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user.email,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      _pill(
+                                        background: const Color(0xFFE8F0FB),
+                                        child: Text(
+                                          role,
+                                          style: GoogleFonts.epilogue(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: primary,
+                                            letterSpacing: 10 * 0.05,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      _pill(
+                                        background: surfaceLow,
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.grid_view_rounded, size: 12, color: onSurfaceVar),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              '$channelsCount $channelLabel',
+                                              style: GoogleFonts.plusJakartaSans(fontSize: 12, color: onSurfaceVar),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              const SizedBox(height: 96),
+            ],
+          ),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: primary,
+        foregroundColor: Colors.white,
+        shape: const CircleBorder(),
+        elevation: 4,
         onPressed: () => context.push('/admin/users/new'),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add_rounded),
       ),
     );
   }

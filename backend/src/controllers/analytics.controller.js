@@ -17,7 +17,9 @@ class AnalyticsController {
       take: 10,
       orderBy: { created_at: 'desc' },
       include: {
-        channel: true,
+        channel: {
+          include: { platform: true }
+        },
         creator: { select: { email: true } }
       }
     });
@@ -64,7 +66,9 @@ class AnalyticsController {
       take: 10,
       orderBy: { created_at: 'desc' },
       include: {
-        channel: true,
+        channel: {
+          include: { platform: true }
+        },
         creator: { select: { email: true } }
       }
     });

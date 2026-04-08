@@ -47,6 +47,24 @@ class AuthService {
     }
   }
 
+  generateResetToken(userId) {
+    return jwt.sign({ userId, type: 'reset' }, env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+  }
+
+  verifyResetToken(token) {
+    try {
+      const decoded = jwt.verify(token, env.JWT_SECRET);
+      if (decoded.type !== 'reset') throw new Error('Invalid token type');
+      return decoded;
+    } catch (err) {
+      const error = new Error('Invalid or expired reset token');
+      error.statusCode = 401;
+      throw error;
+    }
+  }
+
   async getUserById(id) {
     const user = await prisma.user.findUnique({
       where: { id },

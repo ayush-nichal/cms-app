@@ -25,6 +25,7 @@ dependencies:
   connectivity_plus: ^7.1.0
   fl_chart: ^1.2.0
   timeago: ^3.7.1
+  app_links: ^6.3.2
 
 dev_dependencies:
   flutter_test:

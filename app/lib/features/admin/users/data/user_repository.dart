@@ -88,4 +88,11 @@ class UserRepository {
       throw Exception(_extractErrorMessage(e));
     }
   }
+  Future<void> sendResetLink(String userId) async {
+    try {
+      await dio.post('/users/$userId/send-reset-link');
+    } catch (e) {
+      throw Exception(_extractErrorMessage(e));
+    }
+  }
 }

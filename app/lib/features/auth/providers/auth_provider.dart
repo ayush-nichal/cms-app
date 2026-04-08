@@ -42,4 +42,20 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthUser?>> {
       state = AsyncValue.error(e, st);
     }
   }
+
+  Future<void> resetPassword({required String token, required String newPassword}) async {
+    try {
+      await _repository.resetPassword(token: token, newPassword: newPassword);
+    } catch (e, st) {
+      rethrow;
+    }
+  }
+
+  Future<void> forgotPassword(String email) async {
+    try {
+      await _repository.forgotPassword(email);
+    } catch (e, st) {
+      rethrow;
+    }
+  }
 }

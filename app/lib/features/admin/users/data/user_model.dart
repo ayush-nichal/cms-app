@@ -100,12 +100,14 @@ class UpdateUserRequest {
   final String? password;
   final String? whatsappNumber;
   final String? callmebotApiKey;
+  final bool? isActive;
 
   UpdateUserRequest({
     this.email,
     this.password,
     this.whatsappNumber,
     this.callmebotApiKey,
+    this.isActive,
   });
 
   Map<String, dynamic> toJson() {
@@ -114,6 +116,7 @@ class UpdateUserRequest {
     if (password != null && password!.isNotEmpty) map['password'] = password;
     if (whatsappNumber != null) map['whatsapp_number'] = whatsappNumber;
     if (callmebotApiKey != null) map['callmebot_api_key'] = callmebotApiKey;
+    if (isActive != null) map['is_active'] = isActive;
     return map;
   }
 }

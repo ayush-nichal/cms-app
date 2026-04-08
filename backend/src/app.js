@@ -15,8 +15,20 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 
-app.use(helmet());
+// 1. Apply CORS first to allow all incoming requests
 app.use(cors());
+
+// 2. The Bridge Route (Bypass heavy middleware)
+app.get('/reset-password', (req, res) => {
+  console.log('--- DEBUG: Reset Password Bridge Request ---');
+  console.log('User-Agent:', req.headers['user-agent']);
+  res.sendFile(require('path').join(__dirname, '..', 'public', 'reset-password.html'));
+});
+
+// 3. Global Security & Rate Limiting (After the bridge)
+app.use(helmet({
+  contentSecurityPolicy: false, // Relax CSP for local testing
+}));
 app.use(express.json());
 
 const generalLimiter = rateLimit({
@@ -30,6 +42,7 @@ const authLimiter = rateLimit({
 });
 
 app.use(generalLimiter);
+app.use(express.static('public'));
 app.use('/auth/login', authLimiter);
 
 app.use('/health', healthRoutes);

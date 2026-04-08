@@ -36,6 +36,12 @@ class UserService {
     return user;
   }
 
+  async getByEmail(email) {
+    return prisma.user.findUnique({
+      where: { email }
+    });
+  }
+
   async create(email, password, whatsapp_number) {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) throw { statusCode: 400, message: 'Email already exists' };
@@ -68,6 +74,7 @@ class UserService {
     }
     if (data.whatsapp_number !== undefined) updateData.whatsapp_number = data.whatsapp_number || null;
     if (data.callmebot_api_key !== undefined) updateData.callmebot_api_key = data.callmebot_api_key || null;
+    if (data.is_active !== undefined) updateData.is_active = data.is_active;
 
     return prisma.user.update({
       where: { id },

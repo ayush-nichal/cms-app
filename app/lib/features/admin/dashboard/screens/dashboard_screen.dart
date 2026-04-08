@@ -13,79 +13,8 @@ import '../../analytics/widgets/pipeline_bar_chart.dart';
 import '../../analytics/widgets/workload_bar_chart.dart';
 import '../../analytics/widgets/content_mix_doughnut.dart';
 import '../../../../features/auth/providers/auth_provider.dart';
-
-// Color Tokens
-const surface = Color(0xFFF8FAFB);
-const surfaceLow = Color(0xFFF2F4F5);
-const surfaceWhite = Color(0xFFFFFFFF);
-const primary = Color(0xFF005DAC);
-const primaryAlt = Color(0xFF1976D2);
-const onSurface = Color(0xFF191C1D);
-const onSurfaceVar = Color(0xFF8A9099);
-const outlineGhost = Color(0x26C1C6D4);
-const errorRed = Color(0xFFB3261E);
-const successGreen = Color(0xFF1A7A4A);
-
-// Helper Functions
-Color getPlatformGradientStart(String platformName) {
-  final name = platformName.toLowerCase();
-  if (name.contains('youtube')) return const Color(0xFFFF4B4B);
-  if (name.contains('instagram')) return const Color(0xFFF58529);
-  if (name.contains('linkedin')) return const Color(0xFF0A66C2);
-  if (name.contains('tiktok')) return const Color(0xFF010101);
-  if (name.contains('facebook')) return const Color(0xFF1877F2);
-  if (name.contains('twitter') || name.contains('x')) return const Color(0xFF1DA1F2);
-  return primary; // Default
-}
-
-Color getPlatformGradientEnd(String platformName) {
-  final name = platformName.toLowerCase();
-  if (name.contains('youtube')) return const Color(0xFFFF0000);
-  if (name.contains('instagram')) return const Color(0xFF8134AF);
-  if (name.contains('linkedin')) return const Color(0xFF0077B5);
-  if (name.contains('tiktok')) return const Color(0xFFEE1D52);
-  if (name.contains('facebook')) return const Color(0xFF0C5CBF);
-  if (name.contains('twitter') || name.contains('x')) return const Color(0xFF0D8ECF);
-  return primaryAlt; // Default
-}
-
-LinearGradient getPlatformGradient(String platformName) {
-  final name = platformName.toLowerCase();
-  
-  if (name.contains('instagram')) {
-    return const LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF)],
-    );
-  }
-  if (name.contains('tiktok')) {
-    return const LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [Color(0xFF010101), Color(0xFF69C9D0), Color(0xFFEE1D52)],
-    );
-  }
-  
-  return LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      getPlatformGradientStart(platformName),
-      getPlatformGradientEnd(platformName),
-    ],
-  );
-}
-
-IconData getPlatformIcon(String platformName) {
-  final name = platformName.toLowerCase();
-  if (name.contains('youtube')) return Icons.play_circle_filled;
-  if (name.contains('instagram')) return Icons.camera_alt;
-  if (name.contains('linkedin')) return Icons.work;
-  if (name.contains('tiktok')) return Icons.music_note;
-  if (name.contains('facebook')) return Icons.facebook;
-  return Icons.public;
-}
+import '../../../../shared/design/design_tokens.dart';
+import '../widgets/schedule_details_dialog.dart';
 
 String getPlatformSubtitle(String platformName) {
   final name = platformName.toLowerCase();
@@ -105,6 +34,14 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   DateTime? _fromDate;
   DateTime? _toDate;
+  String _searchQuery = '';
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -157,6 +94,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     // Total Scheduled — use overview totalAcrossAll which counts all schedules correctly,
     // falling back to dashboardState.totalScheduled
     final int totalCount = statsState.overview?.totalAcrossAll ?? dashboardState.totalScheduled;
+
+    final recentSchedules = dashboardState.recentSchedules;
+    final filteredSchedules = recentSchedules.where((item) {
+      final query = _searchQuery.toLowerCase();
+      return item.title.toLowerCase().contains(query) || 
+             (item.channelName?.toLowerCase().contains(query) ?? false);
+    }).toList();
 
     return Scaffold(
       backgroundColor: surface,
@@ -242,19 +186,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               Text(
                                 '$totalCount',
                                 style: GoogleFonts.publicSans(
-                                  fontSize: 48,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
+                                    fontSize: 48,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 'Posts',
                                 style: GoogleFonts.publicSans(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white,
-                                ),
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.white,
+                                  ),
                               ),
                             ],
                           ),
@@ -311,19 +255,57 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               const SizedBox(height: 20),
 
               // 4. Recent Activity Section
-              Text(
-                'Recent Activity',
-                style: GoogleFonts.publicSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: onSurface,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Recent Activity',
+                    style: GoogleFonts.publicSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: onSurface,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               
-              if (dashboardState.isLoading && dashboardState.recentSchedules.isEmpty)
+              // Search Bar
+              Container(
+                decoration: BoxDecoration(
+                  color: surfaceWhite,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: const [
+                    BoxShadow(color: Color(0x05191C1D), blurRadius: 20, offset: Offset(0, 4)),
+                  ],
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (value) => setState(() => _searchQuery = value),
+                  style: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurface),
+                  decoration: InputDecoration(
+                    hintText: 'Search posts by title or channel...',
+                    hintStyle: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurfaceVar.withOpacity(0.5)),
+                    prefixIcon: const Icon(Icons.search_rounded, color: onSurfaceVar, size: 20),
+                    suffixIcon: _searchQuery.isNotEmpty 
+                      ? IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 18),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        ) 
+                      : null,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              if (dashboardState.isLoading && recentSchedules.isEmpty)
                 _buildActivitySkeleton()
-              else if (dashboardState.recentSchedules.isEmpty)
+              else if (recentSchedules.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Text(
@@ -334,14 +316,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                   ),
                 )
+              else if (filteredSchedules.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Text(
+                      'No results found for "$_searchQuery"',
+                      style: GoogleFonts.plusJakartaSans(fontSize: 14, color: onSurfaceVar),
+                    ),
+                  ),
+                )
               else
                 ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: dashboardState.recentSchedules.take(5).length,
+                  itemCount: filteredSchedules.take(5).length,
                   separatorBuilder: (_, __) => const SizedBox(height: 4),
                   itemBuilder: (context, index) {
-                    final item = dashboardState.recentSchedules[index];
+                    final item = filteredSchedules[index];
                     final colors = [
                       const Color(0xFF005DAC),
                       const Color(0xFFF58529),
@@ -351,46 +343,56 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ];
                     final dotColor = colors[index % colors.length];
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(top: 4),
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: dotColor,
-                              shape: BoxShape.circle,
+                    return InkWell(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => ScheduleDetailsDialog(schedule: item),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(top: 4),
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: dotColor,
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.title.isNotEmpty ? item.title : '${item.channelName ?? "Asset"} processed',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: onSurface,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.title.isNotEmpty ? item.title : '${item.channelName ?? "Asset"} processed',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: onSurface,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  timeago.format(item.createdAt),
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w400,
-                                    color: onSurfaceVar,
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    timeago.format(item.createdAt),
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
+                                      color: onSurfaceVar,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                            const Icon(Icons.chevron_right_rounded, size: 18, color: onSurfaceVar),
+                          ],
+                        ),
                       ),
                     );
                   },

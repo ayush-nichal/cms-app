@@ -6,6 +6,8 @@ import 'core/config/routes.dart';
 import 'core/theme/app_theme.dart';
 import 'core/network/dio_client.dart';
 
+import 'core/services/deep_link_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -31,6 +33,10 @@ class _MyAppState extends ConsumerState<MyApp> {
   void initState() {
     super.initState();
     _checkHealth();
+    // Initialize Deep Linking
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(deepLinkServiceProvider).init();
+    });
   }
 
   Future<void> _checkHealth() async {

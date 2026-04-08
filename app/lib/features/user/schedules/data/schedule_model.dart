@@ -10,6 +10,7 @@ class Schedule {
   final String? creatorName;
   final String? channelName;
   final String? channelHandle;
+  final String? platformName;
   final DateTime createdAt;
 
   Schedule({
@@ -24,6 +25,7 @@ class Schedule {
     this.creatorName,
     this.channelName,
     this.channelHandle,
+    this.platformName,
     required this.createdAt,
   });
 
@@ -42,6 +44,7 @@ class Schedule {
       creatorName: json['creator']?['email'] as String?,
       channelName: json['channel']?['name'] as String?,
       channelHandle: json['channel']?['handle'] as String?,
+      platformName: json['channel']?['platform']?['name'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
     );
   }

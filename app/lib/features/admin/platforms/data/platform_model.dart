@@ -43,6 +43,7 @@ class Channel {
   final String name;
   final String handle;
   final DateTime? lastPostAt;
+  final int userCount;
 
   Channel({
     required this.id,
@@ -50,6 +51,7 @@ class Channel {
     required this.name,
     required this.handle,
     this.lastPostAt,
+    required this.userCount,
   });
 
   factory Channel.fromJson(Map<String, dynamic> json) {
@@ -57,6 +59,8 @@ class Channel {
     if (json['schedules'] != null && (json['schedules'] as List).isNotEmpty) {
       lastPost = DateTime.parse(json['schedules'][0]['scheduled_at'] as String).toLocal();
     }
+
+    final int users = json['_count'] != null ? (json['_count']['assignments'] as int? ?? 0) : 0;
     
     return Channel(
       id: json['id'] as String,
@@ -64,6 +68,7 @@ class Channel {
       name: json['name'] as String,
       handle: json['handle'] as String,
       lastPostAt: lastPost,
+      userCount: users,
     );
   }
 
@@ -82,6 +87,7 @@ class Channel {
     String? name,
     String? handle,
     DateTime? lastPostAt,
+    int? userCount,
   }) {
     return Channel(
       id: id ?? this.id,
@@ -89,6 +95,7 @@ class Channel {
       name: name ?? this.name,
       handle: handle ?? this.handle,
       lastPostAt: lastPostAt ?? this.lastPostAt,
+      userCount: userCount ?? this.userCount,
     );
   }
 }

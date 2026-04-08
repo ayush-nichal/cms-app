@@ -13,6 +13,7 @@ import '../../analytics/widgets/lead_time_line_chart.dart';
 import '../../analytics/widgets/content_mix_doughnut.dart';
 import '../../../../core/utils/content_type_translator.dart';
 import '../../../../core/widgets/loading_skeleton.dart';
+import '../widgets/schedule_details_dialog.dart';
 
 // Shared Color Tokens
 const surface = Color(0xFFF8FAFB);
@@ -201,7 +202,16 @@ class _PlatformStatsScreenState extends ConsumerState<PlatformStatsScreen> {
                     style: GoogleFonts.plusJakartaSans(color: onSurfaceVar, fontSize: 14)),
                 )
               else
-                ...schedules.map((s) => _PostCard(s: s)),
+                ...schedules.map((s) => InkWell(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => ScheduleDetailsDialog(schedule: s),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: _PostCard(s: s),
+                    )),
 
               const SizedBox(height: 24),
             ],

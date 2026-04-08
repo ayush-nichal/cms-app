@@ -145,4 +145,14 @@ class UserNotifier extends StateNotifier<UserState> {
       rethrow;
     }
   }
+  Future<void> sendResetLink(String userId) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _repository.sendResetLink(userId);
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWithError(e.toString().replaceAll('Exception: ', '')).copyWith(isLoading: false);
+      rethrow;
+    }
+  }
 }

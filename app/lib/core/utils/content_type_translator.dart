@@ -6,19 +6,21 @@ class ContentTypeTranslator {
     'text_post': {
       'YouTube': 'Community Post',
       'Instagram': 'Text Post',
-      'LinkedIn': 'Article / Post',
+      'LinkedIn': 'Professional Update',
       'Twitter': 'Tweet',
       'TikTok': 'Text Post',
       'Facebook': 'Text Post',
+      'Telegram': 'Message',
       'default': 'Text Post',
     },
     'image_post': {
       'YouTube': 'Image Post',
       'Instagram': 'Standard Post',
-      'LinkedIn': 'Photo Post',
+      'LinkedIn': 'Photo Update',
       'Twitter': 'Image Tweet',
       'TikTok': 'Image Post',
       'Facebook': 'Photo Post',
+      'Telegram': 'Photo',
       'default': 'Image Post',
     },
     'short_form_video': {
@@ -27,25 +29,28 @@ class ContentTypeTranslator {
       'LinkedIn': 'Short Video',
       'Twitter': 'Video Tweet',
       'TikTok': 'TikTok Video',
-      'Facebook': 'Short Video',
+      'Facebook': 'FB Reel',
+      'Telegram': 'Video Note',
       'default': 'Short Video',
     },
     'long_form_video': {
       'YouTube': 'Standard Video',
       'Instagram': 'Standard Video',
-      'LinkedIn': 'Video Post',
+      'LinkedIn': 'Video Update',
       'Twitter': 'Video',
       'TikTok': 'Long Video',
       'Facebook': 'Video Post',
+      'Telegram': 'Video',
       'default': 'Long Video',
     },
     'carousel_post': {
       'YouTube': '', // not supported
       'Instagram': 'Carousel Post',
-      'LinkedIn': 'Document Post',
+      'LinkedIn': 'Document / Carousel',
       'Twitter': '', // not supported
       'TikTok': '', // not supported
       'Facebook': 'Carousel Post',
+      'Telegram': '', // not supported
       'default': 'Carousel Post',
     },
   };
