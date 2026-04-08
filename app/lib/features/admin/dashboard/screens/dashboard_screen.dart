@@ -330,7 +330,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: filteredSchedules.take(5).length,
+                  itemCount: filteredSchedules.length > 5 ? 5 : filteredSchedules.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 4),
                   itemBuilder: (context, index) {
                     final item = filteredSchedules[index];
@@ -398,6 +398,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   },
                 ),
               
+              if (recentSchedules.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton(
+                    onPressed: () => context.push('/admin/schedules'),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
+                      backgroundColor: const Color(0xFFF0F5FA),
+                    ),
+                    child: Text(
+                      'View all scheduled posts',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF005DAC),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
             ],
           ),

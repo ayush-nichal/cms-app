@@ -63,9 +63,9 @@ class WorkloadBarChart extends StatelessWidget {
                     final int index = value.toInt();
                     if (index < 0 || index >= data.length || value != index.toDouble()) return const SizedBox.shrink();
                     
-                    String handle = data[index].handle;
-                    if (handle.length > 12) {
-                      handle = '${handle.substring(0, 10)}...';
+                    String label = data[index].name;
+                    if (label.length > 12) {
+                      label = '${label.substring(0, 10)}...';
                     }
 
                     return RotatedBox(
@@ -73,7 +73,7 @@ class WorkloadBarChart extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.only(right: 8.0),
                         child: Text(
-                          handle,
+                          label,
                           style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600),
                           textAlign: TextAlign.right,
                         ),

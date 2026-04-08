@@ -9,6 +9,7 @@ router.use(requireAuth, requireAdmin);
 
 // Global Dashboard Analytics
 router.get('/dashboard/summary', asyncHandler(analyticsController.getDashboardSummary));
+router.get('/dashboard/schedules-list', asyncHandler(analyticsController.getSchedulesList));
 
 // Platform level routes
 router.get('/platform/:id/pipeline', asyncHandler(analyticsController.getPipelineForecast));

@@ -122,4 +122,27 @@ class AnalyticsRepository {
       throw Exception(_extractErrorMessage(e));
     }
   }
+
+  Future<Map<String, dynamic>> getAllSchedules({
+    String? search,
+    String? platformId,
+    String? channelId,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'limit': limit,
+      };
+      if (search != null && search.isNotEmpty) queryParams['search'] = search;
+      if (platformId != null) queryParams['platformId'] = platformId;
+      if (channelId != null) queryParams['channelId'] = channelId;
+
+      final response = await dio.get('/analytics/dashboard/schedules-list', queryParameters: queryParams);
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception(_extractErrorMessage(e));
+    }
+  }
 }

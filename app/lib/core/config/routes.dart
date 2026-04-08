@@ -17,6 +17,7 @@ import '../../features/admin/users/screens/user_detail_screen.dart';
 import '../../features/admin/users/data/user_model.dart';
 import '../../features/admin/dashboard/screens/dashboard_screen.dart';
 import '../../features/admin/dashboard/screens/platform_stats_screen.dart';
+import '../../features/admin/dashboard/screens/all_schedules_screen.dart';
 import '../../features/user/schedules/screens/schedules_screen.dart';
 import '../../features/user/schedules/screens/schedule_form_screen.dart';
 import '../../features/user/schedules/screens/schedule_detail_screen.dart';
@@ -95,6 +96,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/admin/dashboard',
             builder: (context, state) => const DashboardScreen(),
+          ),
+          GoRoute(
+            path: '/admin/schedules',
+            builder: (context, state) => const AllSchedulesScreen(),
           ),
           GoRoute(
             path: '/admin/platforms/:id/stats',

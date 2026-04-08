@@ -14,7 +14,7 @@ class AnalyticsController {
     });
     
     const recent = await prisma.schedule.findMany({
-      take: 10,
+      take: 5,
       orderBy: { created_at: 'desc' },
       include: {
         channel: {
@@ -25,6 +25,39 @@ class AnalyticsController {
     });
 
     res.json({ total, recent });
+  }
+
+  async getSchedulesList(req, res) {
+    const { search, platformId, channelId, page = 1, limit = 20 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const where = {};
+    if (search) {
+      where.title = { contains: search, mode: 'insensitive' };
+    }
+    if (channelId) {
+      where.channel_id = channelId;
+    } else if (platformId) {
+      // If platformId is provided without channelId, filter by all channels of that platform
+      const channels = await prisma.channel.findMany({ where: { platform_id: platformId } });
+      where.channel_id = { in: channels.map(c => c.id) };
+    }
+
+    const [total, items] = await Promise.all([
+      prisma.schedule.count({ where }),
+      prisma.schedule.findMany({
+        where,
+        skip,
+        take: parseInt(limit),
+        orderBy: { scheduled_at: 'desc' },
+        include: {
+          channel: { include: { platform: true } },
+          creator: { select: { email: true } }
+        }
+      })
+    ]);
+
+    res.json({ total, page: parseInt(page), limit: parseInt(limit), items });
   }
 
   // Platform Level Methods
