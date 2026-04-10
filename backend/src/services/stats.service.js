@@ -61,7 +61,6 @@ class StatsService {
       total: c.schedules.length,
     }));
   }
-  }
 }
 
 module.exports = new StatsService();
