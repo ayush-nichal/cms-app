@@ -23,22 +23,14 @@ class StatsService {
     });
 
     const results = platforms.map(p => {
-      let total = 0, scheduled = 0, posted = 0, notPosted = 0;
+      let total = 0;
       for (const channel of p.channels) {
-        for (const s of channel.schedules) {
-          total++;
-          if (s.status === 'scheduled') scheduled++;
-          if (s.status === 'posted') posted++;
-          if (s.status === 'not_posted') notPosted++;
-        }
+        total += channel.schedules.length;
       }
       return {
         platformId: p.id,
         platformName: p.name,
         total,
-        scheduled,
-        posted,
-        not_posted: notPosted
       };
     });
 
@@ -62,24 +54,13 @@ class StatsService {
       }
     });
 
-    return channels.map(c => {
-      let total = 0, scheduled = 0, posted = 0, notPosted = 0;
-      for (const s of c.schedules) {
-        total++;
-        if (s.status === 'scheduled') scheduled++;
-        if (s.status === 'posted') posted++;
-        if (s.status === 'not_posted') notPosted++;
-      }
-      return {
-        channelId: c.id,
-        channelName: c.name,
-        handle: c.handle,
-        total,
-        scheduled,
-        posted,
-        not_posted: notPosted
-      };
-    });
+    return channels.map(c => ({
+      channelId: c.id,
+      channelName: c.name,
+      handle: c.handle,
+      total: c.schedules.length,
+    }));
+  }
   }
 }
 

@@ -15,6 +15,10 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 
+// Trust Render's reverse proxy so req.protocol returns 'https' correctly
+// Required for password reset URLs in emails to use https://
+app.set('trust proxy', 1);
+
 // 1. Apply CORS first to allow all incoming requests
 app.use(cors());
 
