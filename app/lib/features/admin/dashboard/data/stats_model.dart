@@ -20,9 +20,9 @@ class PlatformStat {
       platformId: json['platformId'] as String,
       platformName: json['platformName'] as String,
       total: json['total'] as int,
-      scheduled: json['scheduled'] as int,
-      posted: json['posted'] as int,
-      notPosted: json['not_posted'] as int,
+      scheduled: (json['scheduled'] as int?) ?? 0,
+      posted: (json['posted'] as int?) ?? 0,
+      notPosted: (json['not_posted'] as int?) ?? 0,
     );
   }
 }
@@ -52,9 +52,9 @@ class ChannelStat {
       channelName: json['channelName'] as String,
       handle: json['handle'] as String? ?? '',
       total: json['total'] as int,
-      scheduled: json['scheduled'] as int,
-      posted: json['posted'] as int,
-      notPosted: json['not_posted'] as int,
+      scheduled: (json['scheduled'] as int?) ?? 0,
+      posted: (json['posted'] as int?) ?? 0,
+      notPosted: (json['not_posted'] as int?) ?? 0,
     );
   }
 }

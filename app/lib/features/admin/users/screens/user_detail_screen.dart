@@ -298,8 +298,8 @@ class _UserDetailScreenState extends ConsumerState<UserDetailScreen> {
         backgroundColor: surface,
         elevation: 0,
         leading: IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.menu_rounded, color: onSurfaceVar),
+          onPressed: () => context.pop(),
+          icon: const Icon(Icons.arrow_back_rounded, color: onSurface),
         ),
         title: Text(
           'User Settings',

@@ -115,10 +115,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             color: onSurface,
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.menu_rounded, color: onSurfaceVar),
-          onPressed: () {},
-        ),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: onSurfaceVar),

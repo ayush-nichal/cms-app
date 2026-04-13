@@ -37,35 +37,44 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: _RouterNotifier(ref),
     redirect: (context, state) {
       final authState = ref.read(authProvider);
+      final path = state.uri.path;
+
+      final isPublicRoute = path == '/login' || path == '/reset-password';
+      final isSplash = path == '/splash' || path == '/';
 
       return authState.when(
+        loading: () {
+          // Only redirect to splash if not already on a public or splash route
+          if (isPublicRoute || isSplash) return null;
+          return '/splash';
+        },
+        error: (_, __) {
+          // On error, go to login only if not already there
+          return isPublicRoute ? null : '/login';
+        },
         data: (user) {
-          final isAuthRoute = state.uri.path == '/login' || state.uri.path == '/' || state.uri.path == '/splash' || state.uri.path == '/reset-password';
-          
           if (user == null) {
-            final isPublicRoute = state.uri.path == '/login' || state.uri.path == '/reset-password';
             return isPublicRoute ? null : '/login';
           }
 
-          if (isAuthRoute && state.uri.path != '/reset-password') {
-            if (user.role == 'admin') {
-              return '/admin/dashboard';
-            } else {
-              return '/user/schedules';
-            }
+          // Logged-in user on auth/splash routes → redirect to home
+          if (isPublicRoute || isSplash) {
+            return user.role == 'admin' ? '/admin/dashboard' : '/user/schedules';
           }
-          
-          if (state.uri.path.startsWith('/admin') && user.role != 'admin') {
+
+          if (path == '/admin') return '/admin/dashboard';
+          if (path == '/user') return '/user/schedules';
+
+          // Role guards
+          if (path.startsWith('/admin') && user.role != 'admin') {
             return '/user/schedules';
           }
-          if (state.uri.path.startsWith('/user') && user.role == 'admin') {
+          if (path.startsWith('/user') && user.role == 'admin') {
             return '/admin/dashboard';
           }
 
           return null;
         },
-        loading: () => '/splash',
-        error: (_, __) => '/login',
       );
     },
     routes: [

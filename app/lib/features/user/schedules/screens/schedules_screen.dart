@@ -117,36 +117,7 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
     );
   }
 
-  Widget _userNavBar(BuildContext context) {
-    return NavigationBar(
-      backgroundColor: surfaceWhite,
-      indicatorColor: const Color(0xFFE8F0FB),
-      height: 72,
-      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-      selectedIndex: 0,
-      onDestinationSelected: (index) {
-        if (index == 0) context.go('/user/schedules');
-        // index 1 (Channels) + 2 (Profile) are reserved for future user tabs.
-      },
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.grid_view_outlined, color: onSurfaceVar),
-          selectedIcon: Icon(Icons.grid_view_rounded, color: primary),
-          label: 'Schedules',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.subscriptions_outlined, color: onSurfaceVar),
-          selectedIcon: Icon(Icons.subscriptions_rounded, color: primary),
-          label: 'Channels',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.people_outline_rounded, color: onSurfaceVar),
-          selectedIcon: Icon(Icons.people_rounded, color: primary),
-          label: 'Profile',
-        ),
-      ],
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +152,6 @@ class _SchedulesScreenState extends ConsumerState<SchedulesScreen> {
 
     return Scaffold(
       backgroundColor: surface,
-      bottomNavigationBar: _userNavBar(context),
       floatingActionButton: isCreator
           ? FloatingActionButton(
               backgroundColor: primary,

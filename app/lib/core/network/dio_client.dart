@@ -11,8 +11,8 @@ final dioClientProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
       baseUrl: AppConfig.apiBaseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
+      connectTimeout: const Duration(seconds: 60),
+      receiveTimeout: const Duration(seconds: 60),
     ),
   );
 
@@ -32,7 +32,8 @@ final dioClientProvider = Provider<Dio>((ref) {
       },
       onError: (DioException e, handler) {
         debugPrint('DIO ERR: ${e.message} - ${e.response?.statusCode}');
-        if (e.response?.statusCode == 401) {
+        final path = e.requestOptions.path;
+        if (e.response?.statusCode == 401 && !path.contains('/auth/logout') && !path.contains('/auth/login')) {
           ref.read(authProvider.notifier).logout();
         }
         return handler.next(e);

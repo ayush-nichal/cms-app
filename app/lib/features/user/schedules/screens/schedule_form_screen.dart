@@ -245,36 +245,6 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
     const primitives = ['text_post', 'image_post', 'short_form_video', 'long_form_video', 'carousel_post'];
     final isEditMode = widget.schedule != null;
 
-    NavigationBar userNavBar() {
-      return NavigationBar(
-        backgroundColor: surfaceWhite,
-        indicatorColor: const Color(0xFFE8F0FB),
-        height: 72,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        selectedIndex: 0,
-        onDestinationSelected: (index) {
-          if (index == 0) context.go('/user/schedules');
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.grid_view_outlined, color: onSurfaceVar),
-            selectedIcon: Icon(Icons.grid_view_rounded, color: primary),
-            label: 'Schedules',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.subscriptions_outlined, color: onSurfaceVar),
-            selectedIcon: Icon(Icons.subscriptions_rounded, color: primary),
-            label: 'Channels',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.people_outline_rounded, color: onSurfaceVar),
-            selectedIcon: Icon(Icons.people_rounded, color: primary),
-            label: 'Profile',
-          ),
-        ],
-      );
-    }
-
     TextStyle labelStyle() => GoogleFonts.epilogue(
           fontSize: 11,
           fontWeight: FontWeight.w500,
@@ -308,7 +278,6 @@ class _ScheduleFormScreenState extends ConsumerState<ScheduleFormScreen> {
 
     return Scaffold(
       backgroundColor: surface,
-      bottomNavigationBar: userNavBar(),
       appBar: AppBar(
         backgroundColor: surface,
         elevation: 0,
